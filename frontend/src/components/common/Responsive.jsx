@@ -171,7 +171,7 @@ export const ResponsiveHeading = ({
     <ResponsiveText
       as={Component}
       size={size}
-      weight=\"bold\"
+      weight="bold"
       className={className}
       {...props}
     >
@@ -192,7 +192,7 @@ export const ResponsiveButton = ({
     ${size.sm === 'auto' ? 'sm:w-auto' : ''}
     ${size.sm === 'full' ? 'sm:w-full' : ''}
     touch-target
-  `.replace(/\\s+/g, ' ').trim();
+  `.replace(/\s+/g, ' ').trim();
 
   return (
     <button className={`btn-primary ${buttonClasses} ${className}`} {...props}>
@@ -211,20 +211,20 @@ export const ResponsivePageLayout = ({
   ...props 
 }) => {
   return (
-    <div className=\"min-h-screen bg-gray-50 flex flex-col\">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       {header && (
-        <header className=\"flex-shrink-0\">
+        <header className="flex-shrink-0">
           {header}
         </header>
       )}
       
       {/* Main content */}
-      <main className=\"flex-1 flex flex-col lg:flex-row\">
+      <main className="flex-1 flex flex-col lg:flex-row">
         {/* Sidebar */}
         {sidebar && (
-          <aside className=\"lg:w-64 lg:flex-shrink-0 order-2 lg:order-1\">
-            <div className=\"lg:sticky lg:top-4\">
+          <aside className="lg:w-64 lg:flex-shrink-0 order-2 lg:order-1">
+            <div className="lg:sticky lg:top-4">
               {sidebar}
             </div>
           </aside>
@@ -238,7 +238,7 @@ export const ResponsivePageLayout = ({
       
       {/* Footer */}
       {footer && (
-        <footer className=\"flex-shrink-0\">
+        <footer className="flex-shrink-0">
           {footer}
         </footer>
       )}

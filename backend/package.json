@@ -9,7 +9,19 @@
     "dev": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["patrimonio", "responsaveis", "crud", "api"],
+  "keywords": [
+    "patrimonio",
+    "responsaveis",
+    "crud",
+    "api"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0"
+  }
 }

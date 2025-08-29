@@ -1,0 +1,15 @@
+# Ignorar pastas de dependências
+node_modules/
+vendor/
+
+# Ignorar arquivos de configuração local
+.env
+*.log
+
+# Ignorar arquivos temporários
+*.tmp
+*.swp
+
+# Ignorar diretórios de build
+dist/
+build/

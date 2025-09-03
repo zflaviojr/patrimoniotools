@@ -157,21 +157,23 @@ class Responsavel {
       
       let queryText = 'SELECT * FROM tblresponsavel';
       let countText = 'SELECT COUNT(*) as total FROM tblresponsavel';
-      let params = [];
+      let queryParams = [];
+      let countParams = [];
       
       if (search) {
         const searchTerm = `%${search.toLowerCase()}%`;
         queryText += ' WHERE LOWER(nome) LIKE $1 OR LOWER(matricula) LIKE $1';
         countText += ' WHERE LOWER(nome) LIKE $1 OR LOWER(matricula) LIKE $1';
-        params.push(searchTerm);
+        queryParams.push(searchTerm);
+        countParams.push(searchTerm);
       }
       
-      queryText += ' ORDER BY nome LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
-      params.push(limit, offset);
+      queryText += ' ORDER BY nome LIMIT $' + (queryParams.length + 1) + ' OFFSET $' + (queryParams.length + 2);
+      queryParams.push(limit, offset);
       
       const [responsaveisResult, countResult] = await Promise.all([
-        query(queryText, params),
-        query(countText, search ? [searchTerm] : [])
+        query(queryText, queryParams),
+        query(countText, countParams)
       ]);
       
       const responsaveis = responsaveisResult.rows.map(row => new Responsavel(row));

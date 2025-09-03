@@ -8,6 +8,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 // Importar rotas
 import authRoutes from './routes/auth.js';
 import responsaveisRoutes from './routes/responsaveis.js';
+import usersRoutes from './routes/users.js';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -38,6 +39,7 @@ app.get('/health', (req, res) => {
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/responsaveis', responsaveisRoutes);
+app.use('/api/users', usersRoutes);
 
 // Rota raiz
 app.get('/', (req, res) => {
@@ -48,6 +50,7 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       responsaveis: '/api/responsaveis',
+      users: '/api/users',
       health: '/health'
     }
   });
@@ -90,6 +93,11 @@ const startServer = async () => {
       console.log('   - PUT  /api/responsaveis/:id');
       console.log('   - DELETE /api/responsaveis/:id');
       console.log('   - GET  /api/responsaveis/matricula/:matricula');
+      console.log('   - GET  /api/users (admin only)');
+      console.log('   - POST /api/users (admin only)');
+      console.log('   - PUT  /api/users/:id (admin only)');
+      console.log('   - DELETE /api/users/:id (admin only)');
+      console.log('   - PUT  /api/users/profile/:id');
     });
     
   } catch (error) {

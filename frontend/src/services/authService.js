@@ -105,6 +105,23 @@ export const authService = {
     }
   },
 
+  // Atualizar perfil do usuário
+  async updateProfile(profileData) {
+    try {
+      const response = await api.put('/auth/profile', profileData);
+      
+      if (response.success) {
+        // Atualizar dados no localStorage
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        return response;
+      }
+      
+      throw new Error(response.message || 'Erro ao atualizar perfil');
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Inicializar autenticação ao carregar a aplicação
   async initializeAuth() {
     const token = this.getToken();

@@ -73,7 +73,8 @@ class AuthService {
       const user = await User.create({
         username: username.trim(),
         password,
-        email: email?.trim() || null
+        email: email?.trim() || null,
+        telefone: userData.telefone || null
       });
 
       // Gerar token
@@ -144,6 +145,30 @@ class AuthService {
       
     } catch (error) {
       console.error('Erro ao alterar senha:', error);
+      throw error;
+    }
+  }
+
+  // Atualizar perfil do usuário
+  static async updateProfile(userId, profileData) {
+    try {
+      // Buscar usuário
+      const user = await User.findById(userId);
+      
+      if (!user) {
+        throw new UnauthorizedError('Usuário não encontrado');
+      }
+
+      // Atualizar perfil
+      const updatedUser = await user.updateProfile(profileData);
+      
+      return {
+        message: 'Perfil atualizado com sucesso',
+        data: { user: updatedUser }
+      };
+      
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
       throw error;
     }
   }

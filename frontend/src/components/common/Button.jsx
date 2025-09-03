@@ -14,7 +14,7 @@ const Button = ({
   ...props 
 }) => {
   // Classes base do botão
-  const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   // Variações de cor
   const variants = {
@@ -61,9 +61,9 @@ const Button = ({
     >
       {/* Ícone esquerdo ou spinner de loading */}
       {loading ? (
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
       ) : leftIcon ? (
-        <span className="mr-2">
+        <span>
           {leftIcon}
         </span>
       ) : null}
@@ -75,7 +75,7 @@ const Button = ({
 
       {/* Ícone direito */}
       {!loading && rightIcon && (
-        <span className="ml-2">
+        <span>
           {rightIcon}
         </span>
       )}

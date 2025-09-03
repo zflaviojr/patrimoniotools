@@ -1,12 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { ModuleCard } from '../common/index.js';
 
 const ModuleSelector = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  // Verificar se o usuário é admin
+  const isAdmin = user?.username === 'admin';
 
   // Definir módulos disponíveis
-  const modules = [
+  const baseModules = [
     {
       id: 'responsaveis',
       title: 'Responsáveis',
@@ -18,7 +23,28 @@ const ModuleSelector = () => {
       ),
       path: '/responsaveis',
       enabled: true,
-    },
+    }
+  ];
+  
+  // Adicionar módulo de usuários se for admin
+  const adminModules = isAdmin ? [
+    {
+      id: 'usuarios',
+      title: 'Usuários',
+      description: 'Gerenciar usuários do sistema e permissões',
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+      path: '/usuarios',
+      enabled: true,
+    }
+  ] : [];
+  
+  const modules = [...baseModules, ...adminModules];
+
+  /* Módulos em desenvolvimento - comentados até implementação
     {
       id: 'patrimonio',
       title: 'Patrimônio',
@@ -55,8 +81,8 @@ const ModuleSelector = () => {
       ),
       path: '/configuracoes',
       enabled: false, // Módulo em desenvolvimento
-    },
-  ];
+    }
+  */
 
   // Lidar com clique no módulo
   const handleModuleClick = (module) => {
@@ -104,7 +130,7 @@ const ModuleSelector = () => {
               </div>
             )}
             
-            {module.enabled && module.id === 'responsaveis' && (
+            {module.enabled && (module.id === 'responsaveis' || module.id === 'usuarios') && (
               <div className="absolute top-2 right-2">
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   Disponível
@@ -130,8 +156,14 @@ const ModuleSelector = () => {
             <div className="mt-2 text-sm text-blue-700">
               <ul className="list-disc pl-5 space-y-1">
                 <li>
-                  <strong>Responsáveis:</strong> Módulo completo para gestão de responsáveis
+                  <strong>Responsáveis:</strong> Módulo para gestão de responsáveis
                 </li>
+                {isAdmin && (
+                  <li>
+                    <strong>Usuários:</strong> Gerenciamento de usuários do sistema (apenas admin)
+                  </li>
+                )}
+                {/* Módulos em desenvolvimento - comentados
                 <li>
                   <strong>Patrimônio:</strong> Em desenvolvimento - controle de bens
                 </li>
@@ -141,13 +173,14 @@ const ModuleSelector = () => {
                 <li>
                   <strong>Configurações:</strong> Em desenvolvimento - configurações do sistema
                 </li>
+                */}
               </ul>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Atalhos rápidos */}
+      {/* Atalhos rápidos - comentado até ter mais funcionalidades
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Ações Rápidas
@@ -155,9 +188,9 @@ const ModuleSelector = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <button
             onClick={() => navigate('/responsaveis/novo')}
-            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors gap-2"
           >
-            <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Novo Responsável
@@ -165,25 +198,26 @@ const ModuleSelector = () => {
           
           <button
             onClick={() => navigate('/responsaveis')}
-            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors gap-2"
           >
-            <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             Buscar Responsável
           </button>
           
           <button
-            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
+            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed gap-2"
             disabled
           >
-            <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Gerar Relatório
           </button>
         </div>
       </div>
+      */}
     </div>
   );
 };

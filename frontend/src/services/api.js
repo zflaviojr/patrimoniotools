@@ -47,56 +47,52 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Função para obter mensagem de erro padronizada
+export const getErrorMessage = (error) => {
+  if (error.response) {
+    // Erro de resposta do servidor
+    return error.response.data?.message || 
+           error.response.data?.error || 
+           `Erro ${error.response.status}: ${error.response.statusText}`;
+  } else if (error.request) {
+    // Erro de rede (sem resposta do servidor)
+    return 'Erro de conexão. Verifique sua internet e tente novamente.';
+  } else {
+    // Erro na configuração da requisição
+    return error.message || 'Erro desconhecido ao fazer requisição.';
+  }
+};
+
 // Funções auxiliares para fazer requisições
 export const api = {
   // GET request
   get: async (url, config = {}) => {
-    try {
-      const response = await apiClient.get(url, config);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.get(url, config);
+    return response.data;
   },
 
   // POST request
   post: async (url, data = {}, config = {}) => {
-    try {
-      const response = await apiClient.post(url, data, config);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.post(url, data, config);
+    return response.data;
   },
 
   // PUT request
   put: async (url, data = {}, config = {}) => {
-    try {
-      const response = await apiClient.put(url, data, config);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.put(url, data, config);
+    return response.data;
   },
 
   // DELETE request
   delete: async (url, config = {}) => {
-    try {
-      const response = await apiClient.delete(url, config);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.delete(url, config);
+    return response.data;
   },
 
   // PATCH request
   patch: async (url, data = {}, config = {}) => {
-    try {
-      const response = await apiClient.patch(url, data, config);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiClient.patch(url, data, config);
+    return response.data;
   }
 };
 
@@ -109,23 +105,6 @@ export const setAuthToken = (token) => {
     delete apiClient.defaults.headers.Authorization;
     localStorage.removeItem('token');
   }
-};
-
-// Função para obter mensagem de erro amigável
-export const getErrorMessage = (error) => {
-  if (error.response?.data?.message) {
-    return error.response.data.message;
-  }
-  
-  if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
-    return error.response.data.errors.map(err => err.msg || err.message).join(', ');
-  }
-  
-  if (error.message) {
-    return error.message;
-  }
-  
-  return 'Erro desconhecido. Tente novamente.';
 };
 
 export default apiClient;

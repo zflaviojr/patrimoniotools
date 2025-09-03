@@ -1,8 +1,11 @@
 ---
-trigger: manual
+trigger: always_on
+alwaysApply: true
 ---
 
 Guia de Desenvolvimento Web Simples com React (Frontend) e Node.js (Backend)
+
+
 
 1. Estrutura de Pastas
 
@@ -82,6 +85,7 @@ Backend:
 
 Frontend:
 - Deploy (quando solicitado) em Vercel ou Netlify
+- Rode sempre o comando `npm run dev` para rodar localmente, tanto para o backend como para o frontend
 
 Backend:
 - Usar variáveis de ambiente para configuração
@@ -99,3 +103,25 @@ Backend:
 - Evitar duplicação de lógica
 - Priorizar simplicidade e funcionalidade
 
+11 - Changelog
+
+- Sempre utilize essas referências para padronização.
+  - Crie se não existir o arquivo `CHANGELOG.md` na pasta .quoder/rules.
+  - Sempre considere o conteúdo do arquivo `CHANGELOG.md` como parte do contexto do projeto.
+  - O arquivo de changelog deve ser consultado para:
+    1. Entender histórico de mudanças.
+    2. Seguir convenções de versionamento e anotações.
+    3. Evitar duplicação de entradas já documentadas.
+  - Sempre que for feita uma nova alteração no projeto (feature, correção de bug, refatoração, ajuste de estilo, documentação, etc.), atualize também o `CHANGELOG.md` para refletir a mudança.
+  - Exemplos de boas práticas:
+    - Se for gerar documentação, código ou commits, inclua mudanças seguindo o padrão encontrado no `CHANGELOG.md`.
+    - Se for sugerir melhorias, alinhe com as regras e estilos definidos na pasta `rules`.
+    - Sempre adicione a nova entrada no `CHANGELOG.md` sob a seção correspondente (Added, Changed, Fixed, Removed).
+    - Não ignore o conteúdo do `CHANGELOG.md` nem regras já definidas na pasta raiz.
+
+12 - Padrões de Design
+ - Sempre siga os padrões de design dos componentes descritos no site gov.br brasileiro e os padrões de sites e aplicações gov: https://www.gov.br/ds/components/visao-geral
+
+ 13 - Execução em ambiente local
+ ] - desenvolvimento em ambiente Windows
+   - use ; como separador de comandos. Exemplo: `cd backend ; npm run dev`

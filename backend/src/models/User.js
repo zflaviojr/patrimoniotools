@@ -6,6 +6,7 @@ class User {
     this.id = data.id;
     this.username = data.username;
     this.email = data.email;
+    this.telefone = data.telefone;
     this.password = data.password;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
@@ -44,16 +45,16 @@ class User {
   // Criar novo usuário
   static async create(userData) {
     try {
-      const { username, password, email } = userData;
+      const { username, password, email, telefone } = userData;
       
       // Hash da senha
       const hashedPassword = await bcrypt.hash(password, 10);
       
       const result = await query(
-        `INSERT INTO users (username, password, email, created_at, updated_at) 
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) 
+        `INSERT INTO users (username, password, email, telefone, created_at, updated_at) 
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) 
          RETURNING *`,
-        [username, hashedPassword, email]
+        [username, hashedPassword, email, telefone]
       );
       
       const user = new User(result.rows[0]);
@@ -104,12 +105,169 @@ class User {
   static async findAll() {
     try {
       const result = await query(
-        'SELECT id, username, email, created_at, updated_at FROM users ORDER BY username'
+        'SELECT id, username, email, telefone, created_at, updated_at FROM users ORDER BY username'
       );
       
       return result.rows.map(row => new User(row));
     } catch (error) {
       console.error('Erro ao listar usuários:', error);
+      throw error;
+    }
+  }
+
+  // Listar usuários com paginação e busca
+  static async findAllWithPagination(page = 1, limit = 10, search = '') {
+    try {
+      const offset = (page - 1) * limit;
+      let query_text = `
+        SELECT id, username, email, telefone, created_at, updated_at 
+        FROM users 
+      `;
+      let countQuery = 'SELECT COUNT(*) FROM users ';
+      let params = [];
+      let countParams = [];
+      
+      if (search) {
+        query_text += 'WHERE username ILIKE $1 OR email ILIKE $1 ';
+        countQuery += 'WHERE username ILIKE $1 OR email ILIKE $1';
+        params.push(`%${search}%`);
+        countParams.push(`%${search}%`);
+      }
+      
+      query_text += 'ORDER BY username LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
+      params.push(limit, offset);
+      
+      const [result, countResult] = await Promise.all([
+        query(query_text, params),
+        query(countQuery, countParams)
+      ]);
+      
+      const total = parseInt(countResult.rows[0].count);
+      const totalPages = Math.ceil(total / limit);
+      
+      return {
+        users: result.rows.map(row => new User(row)),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages
+        }
+      };
+    } catch (error) {
+      console.error('Erro ao listar usuários com paginação:', error);
+      throw error;
+    }
+  }
+
+  // Atualizar usuário por ID
+  static async updateById(id, userData) {
+    try {
+      const { username, email, telefone, password } = userData;
+      let queryText = 'UPDATE users SET ';
+      let params = [];
+      let updates = [];
+      
+      if (username !== undefined) {
+        updates.push(`username = $${params.length + 1}`);
+        params.push(username);
+      }
+      
+      if (email !== undefined) {
+        updates.push(`email = $${params.length + 1}`);
+        params.push(email);
+      }
+      
+      if (telefone !== undefined) {
+        updates.push(`telefone = $${params.length + 1}`);
+        params.push(telefone);
+      }
+      
+      if (password !== undefined) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        updates.push(`password = $${params.length + 1}`);
+        params.push(hashedPassword);
+      }
+      
+      if (updates.length === 0) {
+        throw new Error('Nenhum campo para atualizar');
+      }
+      
+      updates.push(`updated_at = CURRENT_TIMESTAMP`);
+      queryText += updates.join(', ');
+      queryText += ` WHERE id = $${params.length + 1} RETURNING id, username, email, telefone, created_at, updated_at`;
+      params.push(id);
+      
+      const result = await query(queryText, params);
+      
+      if (result.rows.length === 0) {
+        return null;
+      }
+      
+      return new User(result.rows[0]);
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      throw error;
+    }
+  }
+
+  // Excluir usuário por ID
+  static async deleteById(id) {
+    try {
+      const result = await query(
+        'DELETE FROM users WHERE id = $1 RETURNING id',
+        [id]
+      );
+      
+      return result.rows.length > 0;
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
+      throw error;
+    }
+  }
+
+  // Atualizar perfil do usuário atual
+  async updateProfile(userData) {
+    try {
+      const { email, telefone } = userData;
+      let queryText = 'UPDATE users SET ';
+      let params = [];
+      let updates = [];
+      
+      if (email !== undefined) {
+        updates.push(`email = $${params.length + 1}`);
+        params.push(email);
+      }
+      
+      if (telefone !== undefined) {
+        updates.push(`telefone = $${params.length + 1}`);
+        params.push(telefone);
+      }
+      
+      if (updates.length === 0) {
+        throw new Error('Nenhum campo para atualizar');
+      }
+      
+      updates.push(`updated_at = CURRENT_TIMESTAMP`);
+      queryText += updates.join(', ');
+      queryText += ` WHERE id = $${params.length + 1} RETURNING id, username, email, telefone, created_at, updated_at`;
+      params.push(this.id);
+      
+      const result = await query(queryText, params);
+      
+      if (result.rows.length === 0) {
+        return null;
+      }
+      
+      // Atualizar os dados do objeto atual
+      const updatedUser = result.rows[0];
+      this.email = updatedUser.email;
+      this.telefone = updatedUser.telefone;
+      this.updated_at = updatedUser.updated_at;
+      
+      return this.toSafeObject();
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
       throw error;
     }
   }

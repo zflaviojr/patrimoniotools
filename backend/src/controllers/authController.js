@@ -31,6 +31,24 @@ class AuthController {
       .isEmail()
       .withMessage('Email deve ter formato válido')
       .normalizeEmail(),
+    body('telefone')
+      .optional()
+      .matches(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)
+      .withMessage('Telefone deve estar no formato (XX) XXXXX-XXXX ou (XX) XXXX-XXXX'),
+    checkValidationErrors
+  ];
+
+  // Validações para atualização de perfil
+  static updateProfileValidation = [
+    body('email')
+      .optional()
+      .isEmail()
+      .withMessage('Email deve ter formato válido')
+      .normalizeEmail(),
+    body('telefone')
+      .optional()
+      .matches(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)
+      .withMessage('Telefone deve estar no formato (XX) XXXXX-XXXX ou (XX) XXXX-XXXX'),
     checkValidationErrors
   ];
 
@@ -134,6 +152,25 @@ class AuthController {
       res.json({
         success: true,
         data: { user: req.user }
+      });
+      
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // PUT /api/auth/profile - Atualizar perfil do usuário atual
+  static async updateProfile(req, res, next) {
+    try {
+      const { email, telefone } = req.body;
+      const userId = req.user.id;
+      
+      const result = await AuthService.updateProfile(userId, { email, telefone });
+      
+      res.json({
+        success: true,
+        message: result.message,
+        data: result.data
       });
       
     } catch (error) {

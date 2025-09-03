@@ -23,6 +23,7 @@ const createTables = async () => {
         username VARCHAR(255) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
         email VARCHAR(255),
+        telefone VARCHAR(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -37,9 +38,9 @@ const createTables = async () => {
       const hashedPassword = await bcrypt.default.hash('admin123', 10);
       
       await query(`
-        INSERT INTO users (username, password, email) 
-        VALUES ($1, $2, $3)
-      `, ['admin', hashedPassword, 'admin@sistema.com']);
+        INSERT INTO users (username, password, email, telefone) 
+        VALUES ($1, $2, $3, $4)
+      `, ['admin', hashedPassword, 'admin@sistema.com', '(83) 2101-1000']);
       
       console.log('Usuário admin criado com sucesso!');
       console.log('Login: admin | Senha: admin123');

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(255),
+    telefone VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -28,8 +29,8 @@ CREATE TABLE IF NOT EXISTS tblresponsavel (
 
 -- Inserir usuário admin padrão
 -- Senha: admin123 (hash bcrypt)
-INSERT INTO users (username, password, email) VALUES 
-('admin', '$2b$10$rOJl9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Qu', 'admin@sistema.com')
+INSERT INTO users (username, password, email, telefone) VALUES 
+('admin', '$2b$10$rOJl9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Qu', 'admin@sistema.com', '(83) 2101-1000')
 ON CONFLICT (username) DO NOTHING;
 
 -- Inserir dados de teste para responsáveis

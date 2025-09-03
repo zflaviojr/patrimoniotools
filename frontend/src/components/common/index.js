@@ -2,6 +2,7 @@
 export { default as Card, CardHeader, CardBody, CardFooter, ModuleCard, ResponsavelCard } from './Card.jsx';
 export { default as Button, ButtonGroup, IconButton, FloatingActionButton, ConfirmButton } from './Button.jsx';
 export { default as Input, Textarea, Select, InputGroup } from './Input.jsx';
+export { default as PhoneInput } from './PhoneInput.jsx';
 export { default as Modal, ConfirmModal, AlertModal, FormModal, DetailModal } from './Modal.jsx';
 export { 
   default as Loading, 

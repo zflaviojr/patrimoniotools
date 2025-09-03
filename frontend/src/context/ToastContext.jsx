@@ -93,24 +93,45 @@ export const ToastProvider = ({ children }) => {
     success: (message, options = {}) => addToast({ 
       type: 'success', 
       message, 
+      duration: 6000,
       ...options 
     }),
     error: (message, options = {}) => addToast({ 
       type: 'error', 
       message, 
-      duration: 8000, 
+      title: options.title || 'Erro!', // Título padrão para erros
+      duration: 10000, // Reduzido para 10 segundos
       ...options 
     }),
     warning: (message, options = {}) => addToast({ 
       type: 'warning', 
       message, 
+      duration: 8000,
       ...options 
     }),
     info: (message, options = {}) => addToast({ 
       type: 'info', 
       message, 
+      duration: 6000,
       ...options 
     })
+  };
+
+  // Função showToast para compatibilidade com código existente
+  const showToast = (message, type = 'info', options = {}) => {
+    switch (type) {
+      case 'success':
+        toast.success(message, options);
+        break;
+      case 'error':
+        toast.error(message, options);
+        break;
+      case 'warning':
+        toast.warning(message, options);
+        break;
+      default:
+        toast.info(message, options);
+    }
   };
 
   const value = {
@@ -118,7 +139,8 @@ export const ToastProvider = ({ children }) => {
     addToast,
     removeToast,
     clearAll,
-    toast
+    toast,
+    showToast
   };
 
   return (
@@ -142,32 +164,32 @@ export const useToast = () => {
 const Toast = ({ toast, onRemove }) => {
   const icons = {
     success: (
-      <svg className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
     error: (
-      <svg className="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
     warning: (
-      <svg className="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
       </svg>
     ),
     info: (
-      <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     )
   };
 
   const bgColors = {
-    success: 'bg-green-50 border-green-200',
-    error: 'bg-red-50 border-red-200',
-    warning: 'bg-yellow-50 border-yellow-200',
-    info: 'bg-blue-50 border-blue-200'
+    success: 'bg-green-50 border-green-400',
+    error: 'bg-red-50 border-red-500',
+    warning: 'bg-yellow-50 border-yellow-400',
+    info: 'bg-blue-50 border-blue-400'
   };
 
   const textColors = {
@@ -179,35 +201,31 @@ const Toast = ({ toast, onRemove }) => {
 
   return (
     <div className={`
-      max-w-sm w-full bg-white shadow-lg rounded-lg border-l-4 
+      w-full max-w-xl min-w-80 bg-white shadow-lg rounded-lg border-l-4 
       ${bgColors[toast.type]} 
       transform transition-all duration-300 ease-in-out
-      hover:scale-105
     `}>
-      <div className="p-4">
+      <div className="px-6 py-4">
         <div className="flex items-start">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 mt-1">
             {icons[toast.type]}
           </div>
           <div className="ml-3 w-0 flex-1">
             {toast.title && (
-              <p className={`text-sm font-medium ${textColors[toast.type]}`}>
+              <h4 className={`text-sm font-bold ${textColors[toast.type]} mb-1`}>
                 {toast.title}
-              </p>
+              </h4>
             )}
-            <p className={`text-sm ${toast.title ? 'mt-1' : ''} ${textColors[toast.type]}`}>
+            <p className={`text-sm font-medium ${textColors[toast.type]}`}>
               {toast.message}
             </p>
           </div>
-          <div className="ml-4 flex-shrink-0 flex">
+          <div className="ml-4 flex flex-shrink-0">
             <button
               onClick={() => onRemove(toast.id)}
-              className={`
-                inline-flex text-gray-400 hover:text-gray-600 
-                focus:outline-none focus:text-gray-600 transition-colors
-              `}
+              className="inline-flex text-gray-400 focus:outline-none focus:text-gray-500 transition ease-in-out duration-150"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -218,20 +236,19 @@ const Toast = ({ toast, onRemove }) => {
   );
 };
 
-// Container de toasts
+// Container para todos os toasts
 const ToastContainer = () => {
   const { toasts, removeToast } = useToast();
-
-  if (toasts.length === 0) return null;
-
+  
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed inset-0 z-50 pointer-events-none p-4 flex flex-col items-end justify-start space-y-2">
       {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          toast={toast}
-          onRemove={removeToast}
-        />
+        <div 
+          key={toast.id} 
+          className="pointer-events-auto transform transition-all duration-300 ease-in-out"
+        >
+          <Toast toast={toast} onRemove={removeToast} />
+        </div>
       ))}
     </div>
   );

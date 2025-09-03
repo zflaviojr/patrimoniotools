@@ -228,23 +228,30 @@ export const FormModal = ({
   loading = false,
   disabled = false,
   size = 'medium',
+  submitButtonRef,
   ...props 
 }) => {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (onSubmit) {
-      onSubmit(event);
-    }
-  };
-
   const footer = (
     <>
       <Button variant="secondary" onClick={onClose} disabled={loading}>
         {cancelText}
       </Button>
       <Button 
-        type="submit" 
-        form="modal-form"
+        ref={submitButtonRef}
+        type="button"
+        onClick={(e) => {
+          // Encontrar o formulário dentro do modal e submetê-lo
+          const modalContent = e.target.closest('.modal-content');
+          if (modalContent) {
+            const form = modalContent.querySelector('form');
+            if (form) {
+              form.requestSubmit();
+            }
+          }
+          if (onSubmit) {
+            onSubmit(e);
+          }
+        }}
         loading={loading}
         disabled={disabled}
       >
@@ -262,11 +269,10 @@ export const FormModal = ({
       footer={footer}
       closeOnOverlayClick={!loading}
       closeOnEsc={!loading}
+      className="modal-content"
       {...props}
     >
-      <form id="modal-form" onSubmit={handleSubmit}>
-        {children}
-      </form>
+      {children}
     </Modal>
   );
 };

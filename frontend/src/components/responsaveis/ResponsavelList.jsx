@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useResponsaveisList, useResponsavelActions } from '../../hooks/useResponsaveis.js';
+import ResponsavelTableList from './ResponsavelTableList.jsx';
 import { 
   Card, 
   Button, 
   Input, 
-  ResponsavelCard, 
-  CardLoading, 
   ConfirmModal,
   DetailModal 
 } from '../common/index.js';
@@ -39,7 +38,9 @@ const ResponsavelList = ({ onEdit, onCreate }) => {
   // Lidar com busca
   const handleSearch = (e) => {
     e.preventDefault();
-    search(searchTerm);
+    if (searchTerm.trim()) {
+      search(searchTerm.trim());
+    }
   };
 
   // Lidar com limpeza de busca
@@ -79,10 +80,15 @@ const ResponsavelList = ({ onEdit, onCreate }) => {
         </div>
         
         <div className="mt-4 sm:mt-0">
-          <Button onClick={onCreate}>
-            <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
+          <Button 
+            size="small" 
+            onClick={onCreate}
+            leftIcon={
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            }
+          >
             Novo Responsável
           </Button>
         </div>
@@ -110,15 +116,21 @@ const ResponsavelList = ({ onEdit, onCreate }) => {
 
             {/* Botões de ação */}
             <div className="flex space-x-2">
-              <Button type="submit" disabled={loading}>
-                Buscar
+              <Button 
+                type="submit" 
+                size="small"
+                disabled={loading || !searchTerm.trim()}
+              >
+                {loading ? 'Buscando...' : 'Buscar'}
               </Button>
               
               {filters.search && (
                 <Button 
                   type="button" 
                   variant="secondary" 
+                  size="small"
                   onClick={handleClearSearch}
+                  disabled={loading}
                 >
                   Limpar
                 </Button>
@@ -149,9 +161,17 @@ const ResponsavelList = ({ onEdit, onCreate }) => {
       </Card>
 
       {/* Lista de responsáveis */}
-      {loading ? (
-        <CardLoading count={6} />
-      ) : error ? (
+      <ResponsavelTableList
+        responsaveis={responsaveis}
+        loading={loading}
+        onEdit={onEdit}
+        onDelete={handleDeleteClick}
+        onView={handleViewDetails}
+        onCreate={onCreate}
+      />
+
+      {/* Mensagem de erro */}
+      {error && (
         <Card className="text-center py-8">
           <svg className="h-12 w-12 text-red-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -164,36 +184,6 @@ const ResponsavelList = ({ onEdit, onCreate }) => {
             Tentar novamente
           </Button>
         </Card>
-      ) : responsaveis.length === 0 ? (
-        <Card className="text-center py-8">
-          <svg className="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-3.5a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {filters.search ? 'Nenhum responsável encontrado' : 'Nenhum responsável cadastrado'}
-          </h3>
-          <p className="text-gray-600 mb-4">
-            {filters.search 
-              ? 'Tente ajustar os filtros de busca'
-              : 'Comece criando o primeiro responsável'
-            }
-          </p>
-          <Button onClick={onCreate}>
-            Novo Responsável
-          </Button>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {responsaveis.map((responsavel) => (
-            <ResponsavelCard
-              key={responsavel.id}
-              responsavel={responsavel}
-              onView={() => handleViewDetails(responsavel)}
-              onEdit={() => onEdit(responsavel)}
-              onDelete={() => handleDeleteClick(responsavel)}
-            />
-          ))}
-        </div>
       )}
 
       {/* Paginação */}

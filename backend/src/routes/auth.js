@@ -26,4 +26,7 @@ router.get('/me', authenticateToken, AuthController.getCurrentUser);
 // POST /api/auth/change-password - Alterar senha
 router.post('/change-password', authenticateToken, AuthController.changePassword);
 
+// PUT /api/auth/profile - Atualizar perfil do usuário atual
+router.put('/profile', authenticateToken, AuthController.updateProfileValidation, AuthController.updateProfile);
+
 export default router;

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authService } from '../services/authService.js';
-import { getErrorMessage } from '../services/api.js';
 
 // Estado inicial
 const initialState = {
@@ -130,7 +129,7 @@ export const AuthProvider = ({ children }) => {
       
       return data;
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
+      const errorMessage = error.response?.data?.message || error.message || 'Erro desconhecido';
       
       dispatch({ 
         type: AUTH_ACTIONS.LOGIN_FAILURE, 
@@ -155,14 +154,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Atualizar dados do usuário
-  const updateUser = async () => {
+  const updateUser = async (newUserData = null) => {
     try {
-      const user = await authService.getCurrentUserFromAPI();
-      dispatch({ 
-        type: AUTH_ACTIONS.SET_USER, 
-        payload: { user } 
-      });
-      return user;
+      if (newUserData) {
+        // Se dados foram fornecidos, apenas atualizar o contexto
+        dispatch({ 
+          type: AUTH_ACTIONS.SET_USER, 
+          payload: { user: newUserData } 
+        });
+        return newUserData;
+      } else {
+        // Se não, buscar da API
+        const user = await authService.getCurrentUserFromAPI();
+        dispatch({ 
+          type: AUTH_ACTIONS.SET_USER, 
+          payload: { user } 
+        });
+        return user;
+      }
     } catch (error) {
       console.error('Erro ao atualizar dados do usuário:', error);
       throw error;

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsavelProvider } from '../context/ResponsavelContext.jsx';
 import { useProtectedRoute } from '../hooks/useAuth.js';
-import Header from '../components/layout/Header.jsx';
 import ResponsavelList from '../components/responsaveis/ResponsavelList.jsx';
 import ResponsavelSearch from '../components/responsaveis/ResponsavelSearch.jsx';
 import ResponsavelForm from '../components/responsaveis/ResponsavelForm.jsx';
@@ -79,10 +78,7 @@ const ResponsaveisPage = () => {
 
   return (
     <ResponsavelProvider>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <Header />
-
+      <div className="flex-1 bg-gray-50">
         {/* Navegação */}
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -107,21 +103,13 @@ const ResponsaveisPage = () => {
                   variant="secondary"
                   size="small"
                   onClick={() => navigate('/dashboard')}
+                  leftIcon={
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                  }
                 >
-                  <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                  </svg>
                   Voltar
-                </Button>
-                
-                <Button
-                  size="small"
-                  onClick={handleCreate}
-                >
-                  <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Novo
                 </Button>
               </div>
             </div>
@@ -198,10 +186,6 @@ const ResponsaveisPage = () => {
           onClose={() => setFormModal({ open: false, responsavel: null })}
           title={formModal.responsavel ? 'Editar Responsável' : 'Novo Responsável'}
           size="medium"
-          onSubmit={(e) => {
-            e.preventDefault();
-            // O form interno gerencia o submit
-          }}
         >
           <ResponsavelForm
             responsavel={formModal.responsavel}

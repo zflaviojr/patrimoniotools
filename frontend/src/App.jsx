@@ -4,7 +4,6 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import Layout from './components/layout/Layout.jsx';
-import ApiDebugger from './components/debug/ApiDebugger.jsx';
 
 // Páginas
 import Login from './pages/Login.jsx';
@@ -77,7 +76,6 @@ function App() {
               {/* Rota 404 - redirecionar para dashboard */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
-            {process.env.NODE_ENV !== 'production' && <ApiDebugger />}
           </div>
         </Router>
       </AuthProvider>

@@ -2,22 +2,49 @@ import React from 'react';
 import { Card, Button, IconButton } from '../common';
 
 const UserCard = ({ 
-  user, 
+  user = {}, // Fornecer um objeto vazio como fallback
   onEdit, 
   onDelete, 
   loading = false 
 }) => {
+  // Verificar se o objeto user existe e é válido
+  if (!user || typeof user !== 'object') {
+    console.error('UserCard recebeu dados inválidos:', user);
+    return (
+      <Card className="p-4 hover:shadow-lg transition-shadow">
+        <div className="text-red-500">
+          Erro: Dados de usuário inválidos
+        </div>
+      </Card>
+    );
+  }
+
+  console.error('UserCard: Recebendo user:', JSON.stringify(user, null, 2));
+
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!dateString) return 'Data não disponível';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Data inválida';
+      }
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Erro ao formatar data:', error);
+      return 'Data inválida';
+    }
   };
 
-  const isAdmin = user.username === 'admin';
+  // Verificar se username existe
+  const username = user.username || 'Usuário sem nome';
+  const isAdmin = username === 'admin';
 
   return (
     <Card className="p-4 hover:shadow-lg transition-shadow">
@@ -25,7 +52,7 @@ const UserCard = ({
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-lg font-semibold text-gray-900">
-              {user.username}
+              {username}
             </h3>
             {isAdmin && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -90,7 +117,11 @@ const UserCard = ({
         
         <div className="flex items-center gap-2 ml-4">
           <IconButton
-            onClick={() => onEdit(user)}
+            onClick={() => {
+              if (onEdit && typeof onEdit === 'function') {
+                onEdit(user);
+              }
+            }}
             disabled={loading}
             variant="ghost"
             size="sm"
@@ -113,7 +144,11 @@ const UserCard = ({
           
           {!isAdmin && (
             <IconButton
-              onClick={() => onDelete(user)}
+              onClick={() => {
+                if (onDelete && typeof onDelete === 'function') {
+                  onDelete(user);
+                }
+              }}
               disabled={loading}
               variant="ghost"
               size="sm"

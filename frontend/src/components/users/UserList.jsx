@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Input, ConfirmModal, Loading } from '../common';
 import UserCard from './UserCard';
 import UserForm from './UserForm';
@@ -13,32 +13,66 @@ const UserList = ({
   onPageChange, 
   onSearch 
 }) => {
+  console.error('UserList: Props recebidas:', {
+    users: JSON.stringify(users, null, 2),
+    loading,
+    pagination: JSON.stringify(pagination, null, 2)
+  });
+  
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [deletingUser, setDeletingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Memoizar usuários válidos para evitar re-renderizações desnecessárias
+  const validUsers = useMemo(() => {
+    console.error('UserList: Calculando validUsers com users:', JSON.stringify(users, null, 2));
+    const result = Array.isArray(users) ? users : [];
+    console.error('UserList: validUsers calculado:', JSON.stringify(result, null, 2));
+    return result;
+  }, [users]);
+
+  // Verificar dados de usuários recebidos
+  useEffect(() => {
+    console.error('UserList: useEffect executado com validUsers:', JSON.stringify(validUsers, null, 2));
+  }, [validUsers]);
+
   const handleSearch = (e) => {
     e.preventDefault();
+    console.error('UserList: Handle search chamado com:', searchTerm);
     onSearch(searchTerm);
   };
 
   const handleCreateUser = () => {
+    console.error('UserList: Handle create user chamado');
     setEditingUser(null);
     setIsFormOpen(true);
   };
 
   const handleEditUser = (user) => {
+    console.error('UserList: Handle edit user chamado com:', JSON.stringify(user, null, 2));
+    // Verificar se o usuário é válido antes de abrir o formulário
+    if (!user || typeof user !== 'object') {
+      console.error('Tentativa de editar usuário inválido:', user);
+      return;
+    }
     setEditingUser(user);
     setIsFormOpen(true);
   };
 
   const handleDeleteUser = (user) => {
+    console.error('UserList: Handle delete user chamado com:', JSON.stringify(user, null, 2));
+    // Verificar se o usuário é válido antes de abrir o modal de confirmação
+    if (!user || typeof user !== 'object') {
+      console.error('Tentativa de excluir usuário inválido:', user);
+      return;
+    }
     setDeletingUser(user);
   };
 
   const handleFormSubmit = async (userData) => {
+    console.error('UserList: Handle form submit chamado com:', JSON.stringify(userData, null, 2));
     setIsSubmitting(true);
     try {
       let result;
@@ -49,6 +83,7 @@ const UserList = ({
         result = await onCreateUser(userData);
       }
 
+      console.error('UserList: Resultado do form submit:', JSON.stringify(result, null, 2));
       // Se o resultado foi bem-sucedido, fechar o modal
       if (result && result.success === true) {
         setIsFormOpen(false);
@@ -62,6 +97,7 @@ const UserList = ({
   };
 
   const confirmDelete = async () => {
+    console.error('UserList: Confirm delete chamado com:', JSON.stringify(deletingUser, null, 2));
     if (deletingUser) {
       setIsSubmitting(true);
       try {
@@ -74,11 +110,13 @@ const UserList = ({
   };
 
   const renderPagination = () => {
-    if (pagination.totalPages <= 1) return null;
+    console.error('UserList: Render pagination chamado com:', JSON.stringify(pagination, null, 2));
+    // Verificar se pagination é um objeto válido
+    if (!pagination || typeof pagination !== 'object' || pagination.totalPages <= 1) return null;
 
     const pages = [];
-    const currentPage = pagination.page;
-    const totalPages = pagination.totalPages;
+    const currentPage = pagination.page || 1;
+    const totalPages = pagination.totalPages || 1;
     
     // Mostrar até 5 páginas
     let startPage = Math.max(1, currentPage - 2);
@@ -95,9 +133,9 @@ const UserList = ({
     return (
       <div className="flex items-center justify-between mt-6 px-4">
         <div className="text-sm text-gray-700">
-          Mostrando {((currentPage - 1) * pagination.limit) + 1} a{' '}
-          {Math.min(currentPage * pagination.limit, pagination.total)} de{' '}
-          {pagination.total} usuários
+          Mostrando {((currentPage - 1) * (pagination.limit || 10)) + 1} a{' '}
+          {Math.min(currentPage * (pagination.limit || 10), pagination.total || 0)} de{' '}
+          {pagination.total || 0} usuários
         </div>
         
         <div className="flex items-center space-x-2">
@@ -134,6 +172,12 @@ const UserList = ({
       </div>
     );
   };
+
+  console.error('Usuários válidos para renderização:', JSON.stringify(validUsers, null, 2));
+
+  // Adicionar verificação adicional para garantir que os usuários estão sendo processados corretamente
+  const hasUsers = validUsers && Array.isArray(validUsers) && validUsers.length > 0;
+  console.error('UserList: hasUsers:', hasUsers);
 
   return (
     <div className="space-y-6">
@@ -190,11 +234,36 @@ const UserList = ({
       </form>
 
       {/* Lista de usuários */}
-      {loading && users.length === 0 ? (
+      {loading ? (
         <div className="flex justify-center py-12">
           <Loading />
         </div>
-      ) : users.length === 0 ? (
+      ) : hasUsers ? (
+        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {validUsers.map((user, index) => {
+            // Verificar se o usuário é válido antes de renderizar
+            if (!user || typeof user !== 'object') {
+              console.error('Usuário inválido encontrado na lista:', user);
+              return null;
+            }
+            
+            console.error('Renderizando UserCard para user:', JSON.stringify(user, null, 2));
+            
+            // Garantir que o usuário tenha um ID único
+            const key = user.id ? user.id : `user-${index}`;
+            
+            return (
+              <UserCard
+                key={key}
+                user={user}
+                onEdit={handleEditUser}
+                onDelete={handleDeleteUser}
+                loading={loading || isSubmitting}
+              />
+            );
+          })}
+        </div>
+      ) : (
         <div className="text-center py-12">
           <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
             <svg fill="currentColor" viewBox="0 0 24 24">
@@ -207,18 +276,6 @@ const UserList = ({
           <p className="text-gray-600">
             {searchTerm ? 'Tente ajustar sua busca' : 'Comece criando seu primeiro usuário'}
           </p>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {users.map(user => (
-            <UserCard
-              key={user.id}
-              user={user}
-              onEdit={handleEditUser}
-              onDelete={handleDeleteUser}
-              loading={loading || isSubmitting}
-            />
-          ))}
         </div>
       )}
 

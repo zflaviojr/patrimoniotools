@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import UserService from '../services/userService';
 import { useToast } from '../context/ToastContext';
 
@@ -12,37 +12,96 @@ export const useUsers = () => {
     totalPages: 0
   });
   const { showToast } = useToast();
+  
+  // Ref para controlar se o componente está montado
+  const isMountedRef = useRef(false);
+  
+  // Memoizar o limite para evitar recriação desnecessária
+  const paginationLimit = useMemo(() => pagination.limit, [pagination.limit]);
+  
+  // Inicializar o ref quando o componente montar
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Buscar usuários com paginação
   const fetchUsers = useCallback(async (page = 1, search = '') => {
+    console.error('useUsers: fetchUsers chamado com:', { page, search, isMounted: isMountedRef.current });
+    
+    if (!isMountedRef.current) {
+      console.error('useUsers: Componente não montado, retornando');
+      return;
+    }
+    
     setLoading(true);
     try {
+      console.error('Buscando usuários com parâmetros:', { page, limit: paginationLimit, search });
+      
       const response = await UserService.getUsers({
         page,
-        limit: pagination.limit,
+        limit: paginationLimit,
         search
       });
 
-      if (response && response.success) {
-        setUsers(response.data || []);
-        setPagination(response.pagination || { 
-          page, 
-          limit: pagination.limit, 
-          total: 0,
-          totalPages: 0 
+      console.error('Resposta da API de usuários:', JSON.stringify(response, null, 2));
+
+      // Verificar se a resposta tem o formato esperado
+      if (response && response.success && isMountedRef.current) {
+        console.error('useUsers: Resposta válida da API, atualizando estado');
+        // Verificar a estrutura da resposta
+        console.error('useUsers: Estrutura da resposta:', {
+          hasData: !!response.data,
+          dataType: typeof response.data,
+          hasUsers: !!(response.data && response.data.users),
+          usersType: response.data && response.data.users ? typeof response.data.users : 'undefined',
+          usersArray: Array.isArray(response.data && response.data.users ? response.data.users : null),
+          hasPagination: !!(response.data && response.data.pagination),
+          paginationType: response.data && response.data.pagination ? typeof response.data.pagination : 'undefined'
         });
-      } else {
+        
+        const usersData = response.data && Array.isArray(response.data.users) ? response.data.users : [];
+        const paginationData = response.data && response.data.pagination ? response.data.pagination : {
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0
+        };
+        
+        console.error('useUsers: Dados a serem definidos:', { usersData, paginationData });
+        setUsers(usersData);
+        setPagination(paginationData);
+      } else if (isMountedRef.current) {
+        console.error('Erro na resposta da API:', response);
         showToast('Erro ao carregar usuários', 'error');
         setUsers([]);
+        setPagination({
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0
+        });
       }
     } catch (error) {
-      console.error('Erro ao buscar usuários:', error);
-      showToast('Erro ao carregar usuários', 'error');
-      setUsers([]);
+      if (isMountedRef.current) {
+        console.error('Erro ao buscar usuários:', error);
+        showToast('Erro ao carregar usuários', 'error');
+        setUsers([]);
+        setPagination({
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0
+        });
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
-  }, [pagination.limit, showToast]);
+  }, [paginationLimit, showToast]);
 
   // Buscar usuário por ID
   const getUserById = useCallback(async (id) => {
@@ -63,6 +122,7 @@ export const useUsers = () => {
 
   // Criar novo usuário
   const createUser = useCallback(async (userData) => {
+    console.error('useUsers: createUser chamado com:', userData);
     setLoading(true);
     try {
       const response = await UserService.createUser(userData);
@@ -85,6 +145,7 @@ export const useUsers = () => {
 
   // Atualizar usuário
   const updateUser = useCallback(async (id, userData) => {
+    console.error('useUsers: updateUser chamado com:', { id, userData });
     setLoading(true);
     try {
       const response = await UserService.updateUser(id, userData);
@@ -107,6 +168,7 @@ export const useUsers = () => {
 
   // Excluir usuário
   const deleteUser = useCallback(async (id) => {
+    console.error('useUsers: deleteUser chamado com:', id);
     setLoading(true);
     try {
       const response = await UserService.deleteUser(id);
@@ -129,6 +191,7 @@ export const useUsers = () => {
 
   // Atualizar perfil
   const updateProfile = useCallback(async (id, profileData) => {
+    console.error('useUsers: updateProfile chamado com:', { id, profileData });
     setLoading(true);
     try {
       const response = await UserService.updateProfile(id, profileData);
@@ -150,6 +213,7 @@ export const useUsers = () => {
 
   // Alterar página
   const changePage = useCallback((newPage) => {
+    console.error('useUsers: changePage chamado com:', newPage);
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       fetchUsers(newPage);
     }
@@ -157,9 +221,15 @@ export const useUsers = () => {
 
   // Alterar limite por página
   const changeLimit = useCallback((newLimit) => {
+    console.error('useUsers: changeLimit chamado com:', newLimit);
     setPagination(prev => ({ ...prev, limit: newLimit, page: 1 }));
     fetchUsers(1);
   }, [fetchUsers]);
+
+  // Log do estado atual
+  useEffect(() => {
+    console.error('useUsers: Estado atualizado:', { users, loading, pagination });
+  }, [users, loading, pagination]);
 
   return {
     users,

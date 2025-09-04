@@ -131,14 +131,18 @@ export const authService = {
       
       try {
         // Validar token com a API
-        return await this.validateToken();
+        const user = await this.validateToken();
+        console.error('authService: initializeAuth - usuário validado:', user);
+        return user;
       } catch (error) {
         // Se token inválido, fazer logout
+        console.error('authService: initializeAuth - erro na validação:', error);
         this.logout();
         return null;
       }
     }
     
+    console.error('authService: initializeAuth - nenhum token encontrado');
     return null;
   }
 };

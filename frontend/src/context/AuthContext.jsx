@@ -109,6 +109,9 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error('Erro ao inicializar autenticação:', error);
         dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      } finally {
+        // Garantir que o loading seja removido
+        dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: false } });
       }
     };
 

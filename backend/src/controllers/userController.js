@@ -8,7 +8,54 @@ class UserController {
       
       const result = await UserService.getAllUsers(page, limit, search);
       
-      res.status(200).json(result);
+      // Garantir que o resultado tenha o formato correto
+      if (result && result.success) {
+        // Verificar se data é um objeto com users e pagination
+        if (result.data && Array.isArray(result.data.users)) {
+          // Novo formato - objeto com users e pagination
+          return res.status(200).json({
+            success: true,
+            data: {
+              users: result.data.users,
+              pagination: result.data.pagination || {
+                page: 1,
+                limit: result.data.users.length,
+                total: result.data.users.length,
+                totalPages: 1
+              }
+            }
+          });
+        } else if (Array.isArray(result.data)) {
+          // Formato antigo - apenas array de usuários
+          // Converter para o novo formato para manter consistência
+          return res.status(200).json({
+            success: true,
+            data: {
+              users: result.data,
+              pagination: {
+                page: 1,
+                limit: result.data.length,
+                total: result.data.length,
+                totalPages: 1
+              }
+            }
+          });
+        }
+      }
+      
+      // Formato padrão se não houver dados válidos
+      return res.status(200).json({
+        success: true,
+        data: {
+          users: [],
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: 0,
+            totalPages: 0
+          }
+        }
+      });
     } catch (error) {
       console.error('Erro no controller ao listar usuários:', error);
       if (error.success === false) {

@@ -20,10 +20,18 @@ class UserService {
 
       const result = await User.findAllWithPagination(pageNum, limitNum, searchTerm);
       
+      // Garantir que o resultado tenha o formato correto
       return {
         success: true,
-        data: result.users,
-        pagination: result.pagination
+        data: {
+          users: Array.isArray(result.users) ? result.users.map(user => user.toSafeObject()) : [],
+          pagination: result.pagination || {
+            page: pageNum,
+            limit: limitNum,
+            total: Array.isArray(result.users) ? result.users.length : 0,
+            totalPages: 1
+          }
+        }
       };
     } catch (error) {
       console.error('Erro no service ao listar usuários:', error);
@@ -127,7 +135,7 @@ class UserService {
       return {
         success: true,
         message: 'Usuário criado com sucesso',
-        data: { user }
+        data: { user: user.toSafeObject() }
       };
     } catch (error) {
       console.error('Erro no service ao criar usuário:', error);
@@ -213,7 +221,7 @@ class UserService {
       return {
         success: true,
         message: 'Usuário atualizado com sucesso',
-        data: { user }
+        data: { user: user.toSafeObject() }
       };
     } catch (error) {
       console.error('Erro no service ao atualizar usuário:', error);

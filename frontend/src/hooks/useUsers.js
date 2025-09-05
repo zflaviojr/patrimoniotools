@@ -145,22 +145,35 @@ export const useUsers = () => {
 
   // Atualizar usuário
   const updateUser = useCallback(async (id, userData) => {
+    console.error('=== INICIANDO UPDATE USER ===');
     console.error('useUsers: updateUser chamado com:', { id, userData });
     setLoading(true);
     try {
       const response = await UserService.updateUser(id, userData);
-      if (response.success) {
+      console.error('useUsers: Resposta bruta do backend:', JSON.stringify(response, null, 2));
+      
+      // Verificar se a resposta tem o formato esperado
+      if (response && response.success) {
+        console.error('useUsers: SUCESSO - response.success é true');
         showToast(response.message || 'Usuário atualizado com sucesso!', 'success');
         await fetchUsers(pagination.page);
+        console.error('=== FINALIZANDO UPDATE USER COM SUCESSO ===');
         return { success: true, data: response.data };
       } else {
-        showToast(response.message || 'Erro ao atualizar usuário', 'error');
-        return { success: false, message: response.message };
+        // Se a resposta não tem success: true, tratar como erro
+        console.error('useUsers: FALHA - response.success é false ou undefined');
+        const errorMessage = response?.message || 'Erro ao atualizar usuário';
+        showToast(errorMessage, 'error');
+        console.error('=== FINALIZANDO UPDATE USER COM ERRO ===');
+        return { success: false, message: errorMessage };
       }
     } catch (error) {
+      console.error('=== ERRO NO UPDATE USER ===');
       console.error('Erro ao atualizar usuário:', error);
-      showToast(error.response?.data?.message || error.message || 'Erro ao atualizar usuário', 'error');
-      return { success: false, message: error.message };
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao atualizar usuário';
+      showToast(errorMessage, 'error');
+      console.error('=== FINALIZANDO UPDATE USER COM EXCEPTION ===');
+      return { success: false, message: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -168,22 +181,35 @@ export const useUsers = () => {
 
   // Excluir usuário
   const deleteUser = useCallback(async (id) => {
+    console.error('=== INICIANDO DELETE USER ===');
     console.error('useUsers: deleteUser chamado com:', id);
     setLoading(true);
     try {
       const response = await UserService.deleteUser(id);
-      if (response.success) {
+      console.error('useUsers: Resposta bruta do backend:', JSON.stringify(response, null, 2));
+      
+      // Verificar se a resposta tem o formato esperado
+      if (response && response.success) {
+        console.error('useUsers: SUCESSO - response.success é true');
         showToast(response.message || 'Usuário excluído com sucesso', 'success');
         await fetchUsers(pagination.page);
+        console.error('=== FINALIZANDO DELETE USER COM SUCESSO ===');
         return { success: true };
       } else {
-        showToast(response.message || 'Erro ao excluir usuário', 'error');
-        return { success: false, message: response.message };
+        // Se a resposta não tem success: true, tratar como erro
+        console.error('useUsers: FALHA - response.success é false ou undefined');
+        const errorMessage = response?.message || 'Erro ao excluir usuário';
+        showToast(errorMessage, 'error');
+        console.error('=== FINALIZANDO DELETE USER COM ERRO ===');
+        return { success: false, message: errorMessage };
       }
     } catch (error) {
+      console.error('=== ERRO NO DELETE USER ===');
       console.error('Erro ao excluir usuário:', error);
-      showToast(error.response?.data?.message || error.message || 'Erro ao excluir usuário', 'error');
-      return { success: false, message: error.message };
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao excluir usuário';
+      showToast(errorMessage, 'error');
+      console.error('=== FINALIZANDO DELETE USER COM EXCEPTION ===');
+      return { success: false, message: errorMessage };
     } finally {
       setLoading(false);
     }

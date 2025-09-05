@@ -113,13 +113,27 @@ class UserService {
   // Atualizar usuário
   static async updateUser(id, userData) {
     console.error('UserService: updateUser chamado com:', { id, userData });
-    return await api.put(`/users/${id}`, userData);
+    try {
+      const response = await api.put(`/users/${id}`, userData);
+      console.error('UserService: Resposta do updateUser:', JSON.stringify(response, null, 2));
+      return response;
+    } catch (error) {
+      console.error('UserService: Erro no updateUser:', error);
+      throw error;
+    }
   }
 
   // Excluir usuário
   static async deleteUser(id) {
     console.error('UserService: deleteUser chamado com id:', id);
-    return await api.delete(`/users/${id}`);
+    try {
+      const response = await api.delete(`/users/${id}`);
+      console.error('UserService: Resposta do deleteUser:', JSON.stringify(response, null, 2));
+      return response;
+    } catch (error) {
+      console.error('UserService: Erro no deleteUser:', error);
+      throw error;
+    }
   }
 
   // Atualizar perfil do usuário

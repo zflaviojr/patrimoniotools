@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Input, ConfirmModal, Loading } from '../common';
 import UserCard from './UserCard';
 import UserForm from './UserForm';
+import UserViewModal from './UserViewModal'; // Importar o novo componente
 
 const UserList = ({ 
   users = [], 
@@ -21,6 +22,7 @@ const UserList = ({
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [viewingUser, setViewingUser] = useState(null); // Estado para usuário sendo visualizado
   const [deletingUser, setDeletingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +63,16 @@ const UserList = ({
     setIsFormOpen(true);
   };
 
+  const handleViewUser = (user) => {
+    console.error('UserList: Handle view user chamado com:', JSON.stringify(user, null, 2));
+    // Verificar se o usuário é válido antes de abrir o modal de visualização
+    if (!user || typeof user !== 'object') {
+      console.error('Tentativa de visualizar usuário inválido:', user);
+      return;
+    }
+    setViewingUser(user);
+  };
+
   const handleDeleteUser = (user) => {
     console.error('UserList: Handle delete user chamado com:', JSON.stringify(user, null, 2));
     // Verificar se o usuário é válido antes de abrir o modal de confirmação
@@ -72,38 +84,61 @@ const UserList = ({
   };
 
   const handleFormSubmit = async (userData) => {
+    console.error('=== INICIANDO HANDLE FORM SUBMIT ===');
     console.error('UserList: Handle form submit chamado com:', JSON.stringify(userData, null, 2));
     setIsSubmitting(true);
     try {
       let result;
       
       if (editingUser) {
+        console.error('UserList: Chamando onUpdateUser para editar usuário');
         result = await onUpdateUser(editingUser.id, userData);
       } else {
+        console.error('UserList: Chamando onCreateUser para criar usuário');
         result = await onCreateUser(userData);
       }
 
       console.error('UserList: Resultado do form submit:', JSON.stringify(result, null, 2));
       // Se o resultado foi bem-sucedido, fechar o modal
       if (result && result.success === true) {
+        console.error('UserList: Operação bem-sucedida, fechando modal');
         setIsFormOpen(false);
         setEditingUser(null);
+      } else {
+        // Se houve erro, manter o formulário aberto e mostrar mensagem
+        console.error('UserList: Erro no form submit:', result);
       }
     } catch (error) {
+      console.error('=== ERRO INESPERADO NO FORM SUBMIT ===');
       console.error('Erro inesperado ao submeter formulário:', error);
     } finally {
+      console.error('=== FINALIZANDO HANDLE FORM SUBMIT ===');
       setIsSubmitting(false);
     }
   };
 
   const confirmDelete = async () => {
+    console.error('=== INICIANDO CONFIRM DELETE ===');
     console.error('UserList: Confirm delete chamado com:', JSON.stringify(deletingUser, null, 2));
     if (deletingUser) {
       setIsSubmitting(true);
       try {
-        await onDeleteUser(deletingUser.id);
-        setDeletingUser(null);
+        console.error('UserList: Chamando onDeleteUser');
+        const result = await onDeleteUser(deletingUser.id);
+        console.error('UserList: Resultado do delete:', JSON.stringify(result, null, 2));
+        // Se o resultado foi bem-sucedido, fechar o modal
+        if (result && result.success === true) {
+          console.error('UserList: Delete bem-sucedido, fechando modal');
+          setDeletingUser(null);
+        } else {
+          // Se houve erro, manter o modal aberto e mostrar mensagem
+          console.error('UserList: Erro no delete:', result);
+        }
+      } catch (error) {
+        console.error('=== ERRO INESPERADO NO DELETE ===');
+        console.error('Erro inesperado ao excluir usuário:', error);
       } finally {
+        console.error('=== FINALIZANDO CONFIRM DELETE ===');
         setIsSubmitting(false);
       }
     }
@@ -257,6 +292,7 @@ const UserList = ({
                 key={key}
                 user={user}
                 onEdit={handleEditUser}
+                onView={handleViewUser} // Passar a função de visualização
                 onDelete={handleDeleteUser}
                 loading={loading || isSubmitting}
               />
@@ -297,6 +333,14 @@ const UserList = ({
             />
           </div>
         </div>
+      )}
+
+      {/* Modal de visualização */}
+      {viewingUser && (
+        <UserViewModal
+          user={viewingUser}
+          onClose={() => setViewingUser(null)}
+        />
       )}
 
       {/* Modal de confirmação de exclusão */}

@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Não publicado]
 
+### Adicionado
+- Funcionalidade de visualização de detalhes dos usuários cadastrados
+- Componente de modal para visualização de usuários
+
 ### Corrigido
 - Problema na exibição dos cards de usuários cadastrados
 - Correção da verificação de estrutura de dados no serviço de usuários

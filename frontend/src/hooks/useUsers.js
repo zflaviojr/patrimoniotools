@@ -126,18 +126,24 @@ export const useUsers = () => {
     setLoading(true);
     try {
       const response = await UserService.createUser(userData);
-      if (response.success) {
-        showToast(response.message || 'Usuário criado com sucesso!', 'success');
+      // Verificar se a resposta tem o formato esperado
+      // A resposta pode estar aninhada em response.data ou ser direta
+      const success = response && (response.success === true || (response.data && response.data.success === true));
+      
+      if (success) {
+        showToast(response.message || response.data?.message || 'Usuário criado com sucesso!', 'success');
         await fetchUsers(pagination.page);
         return { success: true, data: response.data };
       } else {
-        showToast(response.message || 'Erro ao criar usuário', 'error');
-        return { success: false, message: response.message };
+        const errorMessage = response?.message || response?.data?.message || 'Erro ao criar usuário';
+        showToast(errorMessage, 'error');
+        return { success: false, message: errorMessage };
       }
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
-      showToast(error.response?.data?.message || error.message || 'Erro ao criar usuário', 'error');
-      return { success: false, message: error.message };
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao criar usuário';
+      showToast(errorMessage, 'error');
+      return { success: false, message: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -153,19 +159,22 @@ export const useUsers = () => {
       console.error('useUsers: Resposta bruta do backend:', JSON.stringify(response, null, 2));
       
       // Verificar se a resposta tem o formato esperado
-      if (response && response.success) {
+      // A resposta pode estar aninhada em response.data ou ser direta
+      const success = response && (response.success === true || (response.data && response.data.success === true));
+      
+      if (success) {
         console.error('useUsers: SUCESSO - response.success é true');
-        showToast(response.message || 'Usuário atualizado com sucesso!', 'success');
+        showToast(response.message || response.data?.message || 'Usuário atualizado com sucesso!', 'success');
         await fetchUsers(pagination.page);
         console.error('=== FINALIZANDO UPDATE USER COM SUCESSO ===');
-        return { success: true, data: response.data };
+        return response; // Retornar a resposta completa como no authService
       } else {
         // Se a resposta não tem success: true, tratar como erro
         console.error('useUsers: FALHA - response.success é false ou undefined');
-        const errorMessage = response?.message || 'Erro ao atualizar usuário';
+        const errorMessage = response?.message || response?.data?.message || 'Erro ao atualizar usuário';
         showToast(errorMessage, 'error');
         console.error('=== FINALIZANDO UPDATE USER COM ERRO ===');
-        return { success: false, message: errorMessage };
+        return response; // Retornar a resposta completa mesmo em caso de erro
       }
     } catch (error) {
       console.error('=== ERRO NO UPDATE USER ===');
@@ -173,7 +182,12 @@ export const useUsers = () => {
       const errorMessage = error.response?.data?.message || error.message || 'Erro ao atualizar usuário';
       showToast(errorMessage, 'error');
       console.error('=== FINALIZANDO UPDATE USER COM EXCEPTION ===');
-      return { success: false, message: errorMessage };
+      // Retornar um objeto de erro padronizado
+      return { 
+        success: false, 
+        message: errorMessage,
+        error: error
+      };
     } finally {
       setLoading(false);
     }
@@ -189,19 +203,22 @@ export const useUsers = () => {
       console.error('useUsers: Resposta bruta do backend:', JSON.stringify(response, null, 2));
       
       // Verificar se a resposta tem o formato esperado
-      if (response && response.success) {
+      // A resposta pode estar aninhada em response.data ou ser direta
+      const success = response && (response.success === true || (response.data && response.data.success === true));
+      
+      if (success) {
         console.error('useUsers: SUCESSO - response.success é true');
-        showToast(response.message || 'Usuário excluído com sucesso', 'success');
+        showToast(response.message || response.data?.message || 'Usuário excluído com sucesso', 'success');
         await fetchUsers(pagination.page);
         console.error('=== FINALIZANDO DELETE USER COM SUCESSO ===');
-        return { success: true };
+        return response; // Retornar a resposta completa como no authService
       } else {
         // Se a resposta não tem success: true, tratar como erro
         console.error('useUsers: FALHA - response.success é false ou undefined');
-        const errorMessage = response?.message || 'Erro ao excluir usuário';
+        const errorMessage = response?.message || response?.data?.message || 'Erro ao excluir usuário';
         showToast(errorMessage, 'error');
         console.error('=== FINALIZANDO DELETE USER COM ERRO ===');
-        return { success: false, message: errorMessage };
+        return response; // Retornar a resposta completa mesmo em caso de erro
       }
     } catch (error) {
       console.error('=== ERRO NO DELETE USER ===');
@@ -209,7 +226,12 @@ export const useUsers = () => {
       const errorMessage = error.response?.data?.message || error.message || 'Erro ao excluir usuário';
       showToast(errorMessage, 'error');
       console.error('=== FINALIZANDO DELETE USER COM EXCEPTION ===');
-      return { success: false, message: errorMessage };
+      // Retornar um objeto de erro padronizado
+      return { 
+        success: false, 
+        message: errorMessage,
+        error: error
+      };
     } finally {
       setLoading(false);
     }
@@ -221,17 +243,23 @@ export const useUsers = () => {
     setLoading(true);
     try {
       const response = await UserService.updateProfile(id, profileData);
-      if (response.success) {
-        showToast(response.message || 'Perfil atualizado com sucesso', 'success');
+      // Verificar se a resposta tem o formato esperado
+      // A resposta pode estar aninhada em response.data ou ser direta
+      const success = response && (response.success === true || (response.data && response.data.success === true));
+      
+      if (success) {
+        showToast(response.message || response.data?.message || 'Perfil atualizado com sucesso', 'success');
         return { success: true, data: response.data };
       } else {
-        showToast(response.message || 'Erro ao atualizar perfil', 'error');
-        return { success: false, message: response.message };
+        const errorMessage = response?.message || response?.data?.message || 'Erro ao atualizar perfil';
+        showToast(errorMessage, 'error');
+        return { success: false, message: errorMessage };
       }
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
-      showToast(error.response?.data?.message || error.message || 'Erro ao atualizar perfil', 'error');
-      return { success: false, message: error.message };
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao atualizar perfil';
+      showToast(errorMessage, 'error');
+      return { success: false, message: errorMessage };
     } finally {
       setLoading(false);
     }

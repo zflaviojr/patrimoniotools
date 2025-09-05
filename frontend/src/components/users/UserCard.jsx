@@ -54,7 +54,10 @@ const UserCard = ({
     <div className="flex space-x-1">
       {onView && (
         <button
-          onClick={() => onView(user)}
+          onClick={() => {
+            console.error('UserCard: Botão de visualização clicado com user:', user);
+            onView(user);
+          }}
           disabled={loading}
           className="p-1 text-gray-400 hover:text-primary-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Visualizar usuário"
@@ -68,7 +71,10 @@ const UserCard = ({
       
       {onEdit && (
         <button
-          onClick={() => onEdit(user)}
+          onClick={() => {
+            console.error('UserCard: Botão de edição clicado com user:', user);
+            onEdit(user);
+          }}
           disabled={loading}
           className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Editar usuário"
@@ -81,7 +87,10 @@ const UserCard = ({
       
       {onDelete && !isAdmin && (
         <button
-          onClick={() => onDelete(user)}
+          onClick={() => {
+            console.error('UserCard: Botão de exclusão clicado com user:', user);
+            onDelete(user);
+          }}
           disabled={loading}
           className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Excluir usuário"

@@ -248,7 +248,7 @@ const UserProfile = () => {
                 Data de Cadastro
               </label>
               <p className="text-gray-900 py-2 px-3 bg-gray-50 rounded-md">
-                01/01/2024
+                {user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '01/01/2024'}
               </p>
             </div>
           </div>

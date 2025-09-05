@@ -119,6 +119,11 @@ class UserService {
       return response;
     } catch (error) {
       console.error('UserService: Erro no updateUser:', error);
+      console.error('UserService: Detalhes do erro:', {
+        response: error.response,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
@@ -132,6 +137,11 @@ class UserService {
       return response;
     } catch (error) {
       console.error('UserService: Erro no deleteUser:', error);
+      console.error('UserService: Detalhes do erro:', {
+        response: error.response,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
@@ -139,7 +149,19 @@ class UserService {
   // Atualizar perfil do usuário
   static async updateProfile(id, profileData) {
     console.error('UserService: updateProfile chamado com:', { id, profileData });
-    return await api.put(`/users/profile/${id}`, profileData);
+    try {
+      const response = await api.put(`/users/profile/${id}`, profileData);
+      console.error('UserService: Resposta do updateProfile:', JSON.stringify(response, null, 2));
+      return response;
+    } catch (error) {
+      console.error('UserService: Erro no updateProfile:', error);
+      console.error('UserService: Detalhes do erro:', {
+        response: error.response,
+        message: error.message,
+        stack: error.stack
+      });
+      throw error;
+    }
   }
 }
 

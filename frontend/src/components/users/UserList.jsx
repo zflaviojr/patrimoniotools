@@ -99,14 +99,15 @@ const UserList = ({
       }
 
       console.error('UserList: Resultado do form submit:', JSON.stringify(result, null, 2));
-      // Se o resultado foi bem-sucedido, fechar o modal
-      if (result && result.success === true) {
+      // Verificar se a operação foi bem-sucedida (seguindo o mesmo padrão do UserProfile)
+      if (result && (result.success === true || (result.data && !result.error))) {
         console.error('UserList: Operação bem-sucedida, fechando modal');
         setIsFormOpen(false);
         setEditingUser(null);
       } else {
-        // Se houve erro, manter o formulário aberto e mostrar mensagem
+        // Se houve erro, manter o formulário aberto
         console.error('UserList: Erro no form submit:', result);
+        // A mensagem de erro já foi mostrada pelo hook useUsers
       }
     } catch (error) {
       console.error('=== ERRO INESPERADO NO FORM SUBMIT ===');
@@ -126,13 +127,14 @@ const UserList = ({
         console.error('UserList: Chamando onDeleteUser');
         const result = await onDeleteUser(deletingUser.id);
         console.error('UserList: Resultado do delete:', JSON.stringify(result, null, 2));
-        // Se o resultado foi bem-sucedido, fechar o modal
-        if (result && result.success === true) {
+        // Verificar se a operação foi bem-sucedida (seguindo o mesmo padrão do UserProfile)
+        if (result && (result.success === true || (result.data && !result.error))) {
           console.error('UserList: Delete bem-sucedido, fechando modal');
           setDeletingUser(null);
         } else {
-          // Se houve erro, manter o modal aberto e mostrar mensagem
+          // Se houve erro, manter o modal aberto
           console.error('UserList: Erro no delete:', result);
+          // A mensagem de erro já foi mostrada pelo hook useUsers
         }
       } catch (error) {
         console.error('=== ERRO INESPERADO NO DELETE ===');
@@ -291,9 +293,18 @@ const UserList = ({
               <UserCard
                 key={key}
                 user={user}
-                onEdit={handleEditUser}
-                onView={handleViewUser} // Passar a função de visualização
-                onDelete={handleDeleteUser}
+                onEdit={(user) => {
+                  console.error('UserList: Passando user para handleEditUser:', user);
+                  handleEditUser(user);
+                }}
+                onView={(user) => {
+                  console.error('UserList: Passando user para handleViewUser:', user);
+                  handleViewUser(user);
+                }}
+                onDelete={(user) => {
+                  console.error('UserList: Passando user para handleDeleteUser:', user);
+                  handleDeleteUser(user);
+                }}
                 loading={loading || isSubmitting}
               />
             );

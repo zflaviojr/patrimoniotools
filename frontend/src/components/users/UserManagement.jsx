@@ -41,12 +41,16 @@ const UserManagement = () => {
 
   const handleUpdateUser = async (id, userData) => {
     console.error('UserManagement: Handle update user chamado com:', id, JSON.stringify(userData, null, 2));
-    return await updateUser(id, userData);
+    const result = await updateUser(id, userData);
+    console.error('UserManagement: Resultado do updateUser:', JSON.stringify(result, null, 2));
+    return result;
   };
 
   const handleDeleteUser = async (id) => {
     console.error('UserManagement: Handle delete user chamado com:', id);
-    return await deleteUser(id);
+    const result = await deleteUser(id);
+    console.error('UserManagement: Resultado do deleteUser:', JSON.stringify(result, null, 2));
+    return result;
   };
 
   // Log antes de passar os dados para UserList

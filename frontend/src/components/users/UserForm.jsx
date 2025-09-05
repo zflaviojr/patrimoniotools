@@ -90,7 +90,7 @@ const UserForm = ({ onSubmit, user, loading, onCancel }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
@@ -105,7 +105,12 @@ const UserForm = ({ onSubmit, user, loading, onCancel }) => {
         userData.password = formData.password;
       }
 
-      onSubmit(userData);
+      // Seguir o mesmo padrão do handleSave do UserProfile.jsx
+      try {
+        await onSubmit(userData);
+      } catch (error) {
+        console.error('Erro ao submeter formulário:', error);
+      }
     }
   };
 

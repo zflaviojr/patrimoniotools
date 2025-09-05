@@ -28,6 +28,10 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     console.error('API: Erro no interceptor de request:', error);
+    console.error('API: Detalhes do erro no interceptor de request:', {
+      message: error.message,
+      stack: error.stack
+    });
     return Promise.reject(error);
   }
 );
@@ -35,11 +39,20 @@ apiClient.interceptors.request.use(
 // Interceptor para tratar respostas e erros
 apiClient.interceptors.response.use(
   (response) => {
-    console.error('API: Interceptor de response chamado com response:', response);
+    console.error('API: Interceptor de response chamado com response completo:', response);
+    console.error('API: Interceptor de response - response.data:', JSON.stringify(response.data, null, 2));
+    console.error('API: Interceptor de response - response.status:', response.status);
+    console.error('API: Interceptor de response - response.statusText:', response.statusText);
+    console.error('API: Interceptor de response - response.headers:', response.headers);
     return response;
   },
   (error) => {
     console.error('API: Erro no interceptor de response:', error);
+    console.error('API: Detalhes do erro no interceptor:', {
+      response: error.response,
+      message: error.message,
+      stack: error.stack
+    });
     // Se token expirou ou é inválido, fazer logout
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
@@ -104,10 +117,19 @@ export const api = {
     console.error('API: PUT chamado com:', { url, data, config });
     try {
       const response = await apiClient.put(url, data, config);
-      console.error('API: PUT response:', JSON.stringify(response, null, 2));
+      console.error('API: PUT response completo:', response);
+      console.error('API: PUT response.data:', JSON.stringify(response.data, null, 2));
+      console.error('API: PUT response.status:', response.status);
+      console.error('API: PUT response.statusText:', response.statusText);
+      console.error('API: PUT response.headers:', response.headers);
       return response.data;
     } catch (error) {
       console.error('API: Erro no PUT:', error);
+      console.error('API: Detalhes do erro PUT:', {
+        response: error.response,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   },
@@ -117,10 +139,19 @@ export const api = {
     console.error('API: DELETE chamado com:', { url, config });
     try {
       const response = await apiClient.delete(url, config);
-      console.error('API: DELETE response:', JSON.stringify(response, null, 2));
+      console.error('API: DELETE response completo:', response);
+      console.error('API: DELETE response.data:', JSON.stringify(response.data, null, 2));
+      console.error('API: DELETE response.status:', response.status);
+      console.error('API: DELETE response.statusText:', response.statusText);
+      console.error('API: DELETE response.headers:', response.headers);
       return response.data;
     } catch (error) {
       console.error('API: Erro no DELETE:', error);
+      console.error('API: Detalhes do erro DELETE:', {
+        response: error.response,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   },

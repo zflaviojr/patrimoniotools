@@ -119,17 +119,22 @@ export const ToastProvider = ({ children }) => {
 
   // Função showToast para compatibilidade com código existente
   const showToast = (message, type = 'info', options = {}) => {
+    console.error('ToastContext: showToast chamado com:', { message, type, options });
     switch (type) {
       case 'success':
+        console.error('ToastContext: Mostrando toast de sucesso');
         toast.success(message, options);
         break;
       case 'error':
+        console.error('ToastContext: Mostrando toast de erro');
         toast.error(message, options);
         break;
       case 'warning':
+        console.error('ToastContext: Mostrando toast de aviso');
         toast.warning(message, options);
         break;
       default:
+        console.error('ToastContext: Mostrando toast de informação');
         toast.info(message, options);
     }
   };

@@ -188,7 +188,7 @@ class ResponsavelService {
   }
 
   // Listar responsáveis com paginação
-  static async getResponsaveisWithPagination(page = 1, limit = 10, search = '') {
+  static async getResponsaveisWithPagination(page = 1, limit = 10, search = '', sortBy = 'nome', sortOrder = 'ASC') {
     try {
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
@@ -201,7 +201,7 @@ class ResponsavelService {
         throw new ValidationError('Limite deve ser um número entre 1 e 100');
       }
 
-      const result = await Responsavel.findWithPagination(pageNum, limitNum, search);
+      const result = await Responsavel.findWithPagination(pageNum, limitNum, search, sortBy, sortOrder);
       return result;
     } catch (error) {
       console.error('Erro ao buscar responsáveis com paginação:', error);

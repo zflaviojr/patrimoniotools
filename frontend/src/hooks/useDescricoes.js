@@ -9,6 +9,8 @@ export const useDescricoesList = () => {
     page: 1,
     limit: 10,
     search: '',
+    sortBy: 'codigo', // Adicionar campo de ordenação
+    sortOrder: 'DESC' // Adicionar ordem de ordenação
   });
 
   // Usar ref para armazenar os filtros e evitar loops infinitos
@@ -60,6 +62,25 @@ export const useDescricoesList = () => {
     fetchDescricoesRef.current(newFilters);
   }, []);
 
+  // Ordenar por campo
+  const sortBy = useCallback((field) => {
+    const currentSortBy = filtersRef.current.sortBy;
+    const currentSortOrder = filtersRef.current.sortOrder;
+    
+    // Se clicar no mesmo campo, inverter a ordem
+    const newSortOrder = (currentSortBy === field && currentSortOrder === 'ASC') ? 'DESC' : 'ASC';
+    
+    const newFilters = { 
+      ...filtersRef.current, 
+      sortBy: field, 
+      sortOrder: newSortOrder,
+      page: 1 // Resetar para a primeira página ao ordenar
+    };
+    
+    setFilters(newFilters);
+    fetchDescricoesRef.current(newFilters);
+  }, []);
+
   return {
     ...context,
     filters,
@@ -68,6 +89,7 @@ export const useDescricoesList = () => {
     changeLimit,
     search,
     clearSearch,
+    sortBy // Adicionar função de ordenação
   };
 };
 

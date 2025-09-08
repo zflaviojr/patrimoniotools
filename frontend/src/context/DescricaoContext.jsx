@@ -139,7 +139,13 @@ export const DescricaoProvider = ({ children }) => {
     dispatch({ type: DESCRICAO_ACTIONS.SET_LOADING, payload: true });
     
     try {
-      const response = await descricaoService.getAll(params);
+      const queryParams = {
+        ...params,
+        sortBy: params.sortBy || 'codigo', // Adicionar parâmetro de ordenação
+        sortOrder: params.sortOrder || 'DESC' // Adicionar ordem de ordenação
+      };
+      
+      const response = await descricaoService.getAll(queryParams);
       
       dispatch({ 
         type: DESCRICAO_ACTIONS.SET_DESCRICOES, 

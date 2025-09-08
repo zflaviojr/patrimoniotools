@@ -20,7 +20,8 @@ const ResponsavelList = ({ onEdit, onCreate }) => {
     changeLimit,
     search,
     clearSearch,
-    filters
+    filters,
+    sortBy // Adicionar função de ordenação
   } = useResponsaveisList();
 
   const { handleDelete, actionLoading } = useResponsavelActions();
@@ -168,6 +169,11 @@ const ResponsavelList = ({ onEdit, onCreate }) => {
         onDelete={handleDeleteClick}
         onView={handleViewDetails}
         onCreate={onCreate}
+        sortBy={sortBy} // Passar função de ordenação
+        currentSort={{ // Passar informações atuais de ordenação
+          sortBy: filters.sortBy,
+          sortOrder: filters.sortOrder
+        }}
       />
 
       {/* Mensagem de erro */}
@@ -187,58 +193,56 @@ const ResponsavelList = ({ onEdit, onCreate }) => {
       )}
 
       {/* Paginação */}
-      {pagination.totalPages > 1 && (
-        <Card>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            {/* Informações da página */}
-            <div className="text-sm text-gray-700">
-              Página {pagination.page} de {pagination.totalPages} 
-              ({pagination.total} responsáveis)
-            </div>
-
-            {/* Controles de paginação */}
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="secondary"
-                size="small"
-                onClick={() => changePage(pagination.page - 1)}
-                disabled={!pagination.hasPrev || loading}
-              >
-                Anterior
-              </Button>
-              
-              <span className="text-sm text-gray-500">
-                {pagination.page} / {pagination.totalPages}
-              </span>
-              
-              <Button
-                variant="secondary"
-                size="small"
-                onClick={() => changePage(pagination.page + 1)}
-                disabled={!pagination.hasNext || loading}
-              >
-                Próxima
-              </Button>
-            </div>
-
-            {/* Seletor de itens por página */}
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-700">Itens por página:</span>
-              <select
-                value={pagination.limit}
-                onChange={(e) => changeLimit(parseInt(e.target.value))}
-                className="border border-gray-300 rounded px-2 py-1 text-sm"
-                disabled={loading}
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          {/* Informações da página */}
+          <div className="text-sm text-gray-700">
+            Página {pagination.page} de {pagination.totalPages || 1} 
+            ({pagination.total} responsável(eis))
           </div>
-        </Card>
-      )}
+
+          {/* Controles de paginação */}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={() => changePage(pagination.page - 1)}
+              disabled={!pagination.hasPrev || loading}
+            >
+              Anterior
+            </Button>
+            
+            <span className="text-sm text-gray-500">
+              {pagination.page} / {pagination.totalPages || 1}
+            </span>
+            
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={() => changePage(pagination.page + 1)}
+              disabled={!pagination.hasNext || loading}
+            >
+              Próxima
+            </Button>
+          </div>
+
+          {/* Seletor de itens por página */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-700">Itens por página:</span>
+            <select
+              value={pagination.limit}
+              onChange={(e) => changeLimit(parseInt(e.target.value))}
+              className="border border-gray-300 rounded px-2 py-1 text-sm"
+              disabled={loading}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+        </div>
+      </Card>
 
       {/* Modal de confirmação de exclusão */}
       <ConfirmModal

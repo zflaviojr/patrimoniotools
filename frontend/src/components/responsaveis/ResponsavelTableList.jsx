@@ -7,8 +7,31 @@ const ResponsavelTableList = ({
   onDelete, 
   onView,
   onCreate,
-  loading = false 
+  loading = false,
+  sortBy, // Adicionar prop para ordenação
+  currentSort // Adicionar prop para informações atuais de ordenação
 }) => {
+  // Função para renderizar o ícone de ordenação
+  const renderSortIcon = (field) => {
+    if (currentSort?.sortBy !== field) {
+      return (
+        <svg className="h-4 w-4 inline ml-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        </svg>
+      );
+    }
+    
+    return currentSort.sortOrder === 'ASC' ? (
+      <svg className="h-4 w-4 inline ml-1 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
+    ) : (
+      <svg className="h-4 w-4 inline ml-1 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+  };
+
   if (loading) {
     return (
       <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -77,9 +100,27 @@ const ResponsavelTableList = ({
       {/* Header - Oculto em mobile, visível em desktop */}
       <div className="hidden md:block bg-gray-50 px-6 py-3 border-b border-gray-200">
         <div className="grid grid-cols-12 gap-4 items-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-          <div className="col-span-4">Nome</div>
-          <div className="col-span-3">Matrícula</div>
-          <div className="col-span-2">Permissão</div>
+          <div 
+            className="col-span-4 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded flex items-center"
+            onClick={() => sortBy && sortBy('nome')}
+          >
+            Nome
+            {renderSortIcon('nome')}
+          </div>
+          <div 
+            className="col-span-3 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded flex items-center"
+            onClick={() => sortBy && sortBy('matricula')}
+          >
+            Matrícula
+            {renderSortIcon('matricula')}
+          </div>
+          <div 
+            className="col-span-2 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded flex items-center"
+            onClick={() => sortBy && sortBy('permissao')}
+          >
+            Permissão
+            {renderSortIcon('permissao')}
+          </div>
           <div className="col-span-3 text-right">Ações</div>
         </div>
       </div>

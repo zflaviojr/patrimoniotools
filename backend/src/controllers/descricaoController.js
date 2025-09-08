@@ -76,11 +76,11 @@ class DescricaoController {
   // GET /api/descricoes - Listar todas as descrições
   static async getAll(req, res, next) {
     try {
-      const { page, limit, search } = req.query;
+      const { page, limit, search, sortBy, sortOrder } = req.query;
       
       // Se há parâmetros de paginação, usar paginação
       if (page || limit) {
-        const result = await DescricaoService.getDescricoesWithPagination(page, limit, search);
+        const result = await DescricaoService.getDescricoesWithPagination(page, limit, search, sortBy, sortOrder);
         return res.json({
           success: true,
           data: result.descricoes,

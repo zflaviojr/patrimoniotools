@@ -151,9 +151,21 @@ class Responsavel {
   }
 
   // Buscar responsáveis com paginação
-  static async findWithPagination(page = 1, limit = 10, search = '') {
+  static async findWithPagination(page = 1, limit = 10, search = '', sortBy = 'nome', sortOrder = 'ASC') {
     try {
       const offset = (page - 1) * limit;
+      
+      // Validar parâmetros de ordenação
+      const validSortFields = ['id', 'nome', 'matricula', 'permissao'];
+      const validSortOrders = ['ASC', 'DESC'];
+      
+      if (!validSortFields.includes(sortBy)) {
+        sortBy = 'nome'; // Valor padrão
+      }
+      
+      if (!validSortOrders.includes(sortOrder.toUpperCase())) {
+        sortOrder = 'ASC'; // Valor padrão
+      }
       
       let queryText = 'SELECT * FROM tblresponsavel';
       let countText = 'SELECT COUNT(*) as total FROM tblresponsavel';
@@ -168,7 +180,8 @@ class Responsavel {
         countParams.push(searchTerm);
       }
       
-      queryText += ' ORDER BY nome LIMIT $' + (queryParams.length + 1) + ' OFFSET $' + (queryParams.length + 2);
+      // Adicionar ordenação
+      queryText += ` ORDER BY ${sortBy} ${sortOrder} LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
       queryParams.push(limit, offset);
       
       const [responsaveisResult, countResult] = await Promise.all([

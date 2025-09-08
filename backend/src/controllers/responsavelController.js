@@ -71,11 +71,11 @@ class ResponsavelController {
   // GET /api/responsaveis - Listar todos os responsáveis
   static async getAll(req, res, next) {
     try {
-      const { page, limit, search } = req.query;
+      const { page, limit, search, sortBy, sortOrder } = req.query;
       
       // Se há parâmetros de paginação, usar paginação
       if (page || limit) {
-        const result = await ResponsavelService.getResponsaveisWithPagination(page, limit, search);
+        const result = await ResponsavelService.getResponsaveisWithPagination(page, limit, search, sortBy, sortOrder);
         return res.json({
           success: true,
           data: result.responsaveis,

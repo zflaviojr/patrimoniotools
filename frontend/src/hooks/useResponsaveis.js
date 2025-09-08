@@ -9,6 +9,8 @@ export const useResponsaveisList = () => {
     page: 1,
     limit: 10,
     search: '',
+    sortBy: 'nome', // Adicionar campo de ordenação
+    sortOrder: 'ASC' // Adicionar ordem de ordenação
   });
 
   // Carregar responsáveis com filtros
@@ -21,7 +23,7 @@ export const useResponsaveisList = () => {
     } catch (error) {
       console.error('Erro ao carregar responsáveis:', error);
     }
-  }, [context.fetchResponsaveis]); // Remover dependência de filters
+  }, [context.fetchResponsaveis, filters]); // Remover dependência de filters
 
   // Alterar página
   const changePage = useCallback((page) => {
@@ -51,6 +53,25 @@ export const useResponsaveisList = () => {
     context.fetchResponsaveis(newFilters);
   }, [filters, context.fetchResponsaveis]);
 
+  // Ordenar por campo
+  const sortBy = useCallback((field) => {
+    const currentSortBy = filters.sortBy;
+    const currentSortOrder = filters.sortOrder;
+    
+    // Se clicar no mesmo campo, inverter a ordem
+    const newSortOrder = (currentSortBy === field && currentSortOrder === 'ASC') ? 'DESC' : 'ASC';
+    
+    const newFilters = { 
+      ...filters, 
+      sortBy: field, 
+      sortOrder: newSortOrder,
+      page: 1 // Resetar para a primeira página ao ordenar
+    };
+    
+    setFilters(newFilters);
+    context.fetchResponsaveis(newFilters);
+  }, [filters, context.fetchResponsaveis]);
+
   return {
     ...context,
     filters,
@@ -59,6 +80,7 @@ export const useResponsaveisList = () => {
     changeLimit,
     search,
     clearSearch,
+    sortBy // Adicionar função de ordenação
   };
 };
 

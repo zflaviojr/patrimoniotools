@@ -157,9 +157,21 @@ class Descricao {
   }
 
   // Buscar descrições com paginação
-  static async findWithPagination(page = 1, limit = 10, search = '') {
+  static async findWithPagination(page = 1, limit = 10, search = '', sortBy = 'codigo', sortOrder = 'DESC') {
     try {
       const offset = (page - 1) * limit;
+      
+      // Validar parâmetros de ordenação
+      const validSortFields = ['id', 'codigo', 'descricao', 'subcontasiafi', 'vidautil', 'useradd'];
+      const validSortOrders = ['ASC', 'DESC'];
+      
+      if (!validSortFields.includes(sortBy)) {
+        sortBy = 'codigo'; // Valor padrão
+      }
+      
+      if (!validSortOrders.includes(sortOrder.toUpperCase())) {
+        sortOrder = 'DESC'; // Valor padrão
+      }
       
       let queryText = 'SELECT * FROM tbldescricao WHERE deletado = 0';
       let countText = 'SELECT COUNT(*) as total FROM tbldescricao WHERE deletado = 0';
@@ -174,7 +186,8 @@ class Descricao {
         countParams.push(searchTerm);
       }
       
-      queryText += ' ORDER BY descricao LIMIT $' + (queryParams.length + 1) + ' OFFSET $' + (queryParams.length + 2);
+      // Adicionar ordenação
+      queryText += ` ORDER BY ${sortBy} ${sortOrder} LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
       queryParams.push(limit, offset);
       
       const [descricoesResult, countResult] = await Promise.all([

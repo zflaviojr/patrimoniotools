@@ -1,7 +1,28 @@
 import React from 'react';
 import { Button, Loading } from '../common/index.js';
 
-const DescricaoTableList = ({ descricoes, onEdit, onDelete, onView, loading }) => { // Adicionar onView às props
+const DescricaoTableList = ({ descricoes, onEdit, onDelete, onView, loading, sortBy, currentSort }) => {
+  // Função para renderizar o ícone de ordenação
+  const renderSortIcon = (field) => {
+    if (currentSort?.sortBy !== field) {
+      return (
+        <svg className="h-4 w-4 inline ml-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        </svg>
+      );
+    }
+    
+    return currentSort.sortOrder === 'ASC' ? (
+      <svg className="h-4 w-4 inline ml-1 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
+    ) : (
+      <svg className="h-4 w-4 inline ml-1 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+  };
+
   if (loading && descricoes.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -29,20 +50,55 @@ const DescricaoTableList = ({ descricoes, onEdit, onDelete, onView, loading }) =
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Código
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              onClick={() => sortBy('codigo')}
+            >
+              <div className="flex items-center">
+                Código
+                {renderSortIcon('codigo')}
+              </div>
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Descrição
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              onClick={() => sortBy('descricao')}
+            >
+              <div className="flex items-center">
+                Descrição
+                {renderSortIcon('descricao')}
+              </div>
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Subconta SIAFI
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              onClick={() => sortBy('subcontasiafi')}
+            >
+              <div className="flex items-center">
+                Subconta SIAFI
+                {renderSortIcon('subcontasiafi')}
+              </div>
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Vida Útil
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              onClick={() => sortBy('vidautil')}
+            >
+              <div className="flex items-center">
+                Vida Útil
+                {renderSortIcon('vidautil')}
+              </div>
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Usuário
+            <th 
+              scope="col" 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              onClick={() => sortBy('useradd')}
+            >
+              <div className="flex items-center">
+                Usuário
+                {renderSortIcon('useradd')}
+              </div>
             </th>
             <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               Ações
@@ -69,7 +125,7 @@ const DescricaoTableList = ({ descricoes, onEdit, onDelete, onView, loading }) =
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex justify-end space-x-1">
-                  {onView && ( // Adicionar botão de visualização
+                  {onView && (
                     <Button
                       variant="secondary"
                       size="small"
@@ -97,7 +153,7 @@ const DescricaoTableList = ({ descricoes, onEdit, onDelete, onView, loading }) =
                     size="small"
                     onClick={() => onDelete(descricao)}
                     title="Excluir"
-                    disabled={true} // Desabilitar botão de excluir como nos responsáveis
+                    disabled={true}
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

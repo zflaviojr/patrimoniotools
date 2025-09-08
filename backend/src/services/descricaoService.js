@@ -172,7 +172,7 @@ class DescricaoService {
   }
 
   // Listar descrições com paginação
-  static async getDescricoesWithPagination(page = 1, limit = 10, search = '') {
+  static async getDescricoesWithPagination(page = 1, limit = 10, search = '', sortBy = 'codigo', sortOrder = 'DESC') {
     try {
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
@@ -185,7 +185,7 @@ class DescricaoService {
         throw new ValidationError('Limite deve ser um número entre 1 e 100');
       }
 
-      const result = await Descricao.findWithPagination(pageNum, limitNum, search);
+      const result = await Descricao.findWithPagination(pageNum, limitNum, search, sortBy, sortOrder);
       return result;
     } catch (error) {
       console.error('Erro ao buscar descrições com paginação:', error);

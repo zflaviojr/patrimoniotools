@@ -9,6 +9,7 @@ import Layout from './components/layout/Layout.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Responsaveis from './pages/Responsaveis.jsx';
+import Descricoes from './pages/Descricoes.jsx';
 import Users from './pages/Users.jsx';
 import UserProfile from './pages/UserProfile.jsx';
 
@@ -43,6 +44,17 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <Responsaveis />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/descricoes" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Descricoes />
                     </Layout>
                   </ProtectedRoute>
                 } 

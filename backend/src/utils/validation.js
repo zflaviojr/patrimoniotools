@@ -39,6 +39,27 @@ export const isValidPermissao = (permissao) => {
   return !isNaN(num) && num >= 0 && num <= 10;
 };
 
+// Validações para Descrição
+export const isValidDescricao = (descricao) => {
+  // Descrição deve ter pelo menos 2 caracteres e no máximo 255
+  return descricao && descricao.trim().length >= 2 && descricao.length <= 255;
+};
+
+export const isValidVidaUtil = (vidautil) => {
+  // Vida útil deve ser um número entre 0 e 100, ou null/undefined
+  if (vidautil === null || vidautil === undefined) {
+    return true;
+  }
+  
+  const num = parseInt(vidautil);
+  return !isNaN(num) && num >= 0 && num <= 100;
+};
+
+export const isValidSubcontaSiafi = (subconta) => {
+  // Subconta SIAFI é opcional, mas se fornecida deve ter no máximo 50 caracteres
+  return !subconta || (subconta.length <= 50);
+};
+
 // Validação de telefone brasileiro
 export const isValidTelefone = (telefone) => {
   // Telefone deve estar no formato (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
@@ -74,7 +95,7 @@ export const sanitizeString = (str) => {
     return str;
   }
   
-  return str.trim().replace(/\\s+/g, ' ');
+  return str.trim().replace(/\s+/g, ' ');
 };
 
 // Sanitizar matrícula (converter para maiúscula)

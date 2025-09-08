@@ -9,6 +9,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
 import responsaveisRoutes from './routes/responsaveis.js';
 import usersRoutes from './routes/users.js';
+import descricoesRoutes from './routes/descricoes.js';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -40,6 +41,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/responsaveis', responsaveisRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/descricoes', descricoesRoutes);
 
 // Rota raiz
 app.get('/', (req, res) => {
@@ -51,6 +53,7 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       responsaveis: '/api/responsaveis',
       users: '/api/users',
+      descricoes: '/api/descricoes',
       health: '/health'
     }
   });
@@ -93,6 +96,11 @@ const startServer = async () => {
       console.log('   - PUT  /api/responsaveis/:id');
       console.log('   - DELETE /api/responsaveis/:id');
       console.log('   - GET  /api/responsaveis/matricula/:matricula');
+      console.log('   - GET  /api/descricoes');
+      console.log('   - POST /api/descricoes');
+      console.log('   - PUT  /api/descricoes/:id');
+      console.log('   - DELETE /api/descricoes/:id');
+      console.log('   - GET  /api/descricoes/codigo/:codigo');
       console.log('   - GET  /api/users (admin only)');
       console.log('   - POST /api/users (admin only)');
       console.log('   - PUT  /api/users/:id (admin only)');

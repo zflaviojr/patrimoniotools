@@ -1,54 +1,47 @@
 # Changelog
 
-Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
-
-O formato é baseado em [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Não publicado]
+## [1.1.0] - 2025-09-05
 
 ### Adicionado
-- Funcionalidade de visualização de detalhes dos usuários cadastrados
-- Componente de modal para visualização de usuários
 
-### Corrigido
-- Problema na exibição dos cards de usuários cadastrados
-- Correção da verificação de estrutura de dados no serviço de usuários
-- Remoção do frame de debug da API que foi utilizado para testes
-- Problema de loop infinito na listagem de usuários no frontend
-- Problema de exibição da lista de usuários no frontend
-- Tratamento de dados de usuários no hook useUsers
-- Validação de dados no componente UserCard
-- Formatação de datas no componente UserCard
-- Tratamento de dados no componente UserList
-- Retorno de dados no formato correto no backend (UserController)
-- Estrutura de dados no serviço de usuários (UserService)
-- Formatação de dados de usuários no backend para garantir compatibilidade com o frontend
-- Problemas de autenticação com tokens expirados
+- Implementação completa do CRUD para a entidade "Descrição"
+- Banco de dados:
+  - Tabela `tbldescricao` com campos: id, descricao, subcontasiafi, vidautil, codigo, useradd, deletado
+  - Generator automático para o campo `codigo` usando sequences do PostgreSQL
+  - Trigger para preencher automaticamente o código ao inserir novos registros
+- Backend:
+  - Modelo [Descricao.js](backend/src/models/Descricao.js) com métodos para CRUD e buscas
+  - Serviço [descricaoService.js](backend/src/services/descricaoService.js) com lógica de negócio e validações
+  - Controlador [descricaoController.js](backend/src/controllers/descricaoController.js) com endpoints da API
+  - Rotas [descricoes.js](backend/src/routes/descricoes.js) para acesso aos endpoints
+  - Validações adicionais para os campos da entidade Descrição
+- Frontend:
+  - Serviço [descricaoService.js](frontend/src/services/descricaoService.js) para comunicação com a API
+  - Contexto [DescricaoContext.jsx](frontend/src/context/DescricaoContext.jsx) para gerenciamento de estado
+  - Hooks [useDescricoes.js](frontend/src/hooks/useDescricoes.js) para lógica de componentes
+  - Componentes:
+    - [DescricaoForm.jsx](frontend/src/components/descricoes/DescricaoForm.jsx) - Formulário de criação/edição
+    - [DescricaoList.jsx](frontend/src/components/descricoes/DescricaoList.jsx) - Lista principal
+    - [DescricaoTableList.jsx](frontend/src/components/descricoes/DescricaoTableList.jsx) - Tabela de registros
+    - [DescricaoSearch.jsx](frontend/src/components/descricoes/DescricaoSearch.jsx) - Componente de busca
+  - Página [Descricoes.jsx](frontend/src/pages/Descricoes.jsx) para acesso ao módulo
+  - Integração no menu principal através do [ModuleSelector.jsx](frontend/src/components/layout/ModuleSelector.jsx)
+  - Rota adicionada no [App.jsx](frontend/src/App.jsx)
+- Testes:
+  - Script de teste [test-descricao.js](backend/test-descricao.js) para verificar funcionalidades
 
-## [1.0.0] - 2024-05-15
+### Modificado
+
+- Atualização do script de inicialização do banco de dados [database-setup.sql](backend/database-setup.sql) para incluir a tabela de descrições e dados de teste
+- Atualização do arquivo principal do backend [index.js](backend/src/index.js) para incluir as novas rotas
+- Atualização do utilitário de validações [validation.js](backend/src/utils/validation.js) para incluir validações específicas da entidade Descrição
+
+## [1.0.0] - 2025-09-01
 
 ### Adicionado
-- Sistema de gerenciamento de responsáveis
-- Sistema de autenticação de usuários
-- CRUD de responsáveis
-- CRUD de usuários
-- Interface administrativa
-- Validações de formulários
-- Tratamento de erros
-- Sistema de notificações (toasts)
-- Paginação de listagens
-- Busca por responsáveis
-- Perfil de usuário
-- Alteração de senha
-- Design responsivo
 
-### Alterado
-- Melhorias na interface do usuário
-- Otimizações de performance
-- Atualizações de segurança
-
-### Corrigido
-- Diversos bugs relacionados a validações
-- Problemas de exibição em dispositivos móveis
-- Erros de tratamento de dados
+- Versão inicial do sistema com CRUD completo para a entidade "Responsável"
+- Autenticação JWT e controle de acesso
+- Interface administrativa responsiva com React
+- Backend em Node.js com Express
+- Banco de dados PostgreSQL

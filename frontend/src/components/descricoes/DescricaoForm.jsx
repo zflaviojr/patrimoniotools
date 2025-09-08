@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDescricaoForm } from '../../hooks/useDescricoes.js';
 import { Input, Button, Card, ConfirmModal } from '../common/index.js';
+import { useAuth } from '../../context/AuthContext.jsx'; // Importar o hook de autenticação
 
 const DescricaoForm = ({ 
   descricao = null, 
@@ -8,6 +9,7 @@ const DescricaoForm = ({
   onCancel,
   showButtons = true
 }) => {
+  const { user } = useAuth(); // Obter o usuário logado
   const {
     formData,
     errors,
@@ -18,7 +20,7 @@ const DescricaoForm = ({
     resetForm,
     validateForm,
     isValid
-  } = useDescricaoForm(descricao);
+  } = useDescricaoForm(descricao, user?.username); // Passar o nome de usuário para o hook
 
   // Estado para o modal de confirmação
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -82,7 +84,7 @@ const DescricaoForm = ({
             error={errors.descricao}
             placeholder="Digite a descrição"
             required
-            disabled={loading}
+            disabled={loading || !!descricao} // Desabilitar no modo edição
             leftIcon={
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -98,6 +100,7 @@ const DescricaoForm = ({
             onChange={(e) => updateField('subcontasiafi', e.target.value)}
             error={errors.subcontasiafi}
             placeholder="Digite a subconta SIAFI"
+            required // Tornar obrigatório
             disabled={loading}
             leftIcon={
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -114,6 +117,7 @@ const DescricaoForm = ({
             onChange={(e) => updateField('vidautil', e.target.value)}
             error={errors.vidautil}
             placeholder="Digite a vida útil em anos"
+            required // Tornar obrigatório
             min="0"
             max="100"
             disabled={loading}
@@ -132,7 +136,8 @@ const DescricaoForm = ({
             onChange={(e) => updateField('useradd', e.target.value)}
             error={errors.useradd}
             placeholder="Digite o nome do usuário"
-            disabled={loading}
+            required // Tornar obrigatório
+            disabled={true} // Desabilitar o campo usuário
             leftIcon={
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -156,7 +161,7 @@ const DescricaoForm = ({
                 loading={loading}
                 disabled={!isValid}
               >
-                {descricao ? 'Atualizar' : 'Criar'}
+                {descricao ? 'Atualizar' : 'Salvar'}
               </Button>
             </div>
           )}

@@ -15,7 +15,7 @@ export const useDescricoesList = () => {
   const filtersRef = useRef(filters);
   // Usar ref para armazenar context.fetchDescricoes e evitar loops infinitos
   const fetchDescricoesRef = useRef(context.fetchDescricoes);
-  
+
   // Atualizar refs quando os valores mudarem
   filtersRef.current = filters;
   fetchDescricoesRef.current = context.fetchDescricoes;
@@ -24,7 +24,7 @@ export const useDescricoesList = () => {
   const loadDescricoes = useCallback(async (newFilters = {}) => {
     const finalFilters = { ...filtersRef.current, ...newFilters };
     setFilters(finalFilters);
-    
+
     try {
       await fetchDescricoesRef.current(finalFilters);
     } catch (error) {
@@ -72,24 +72,24 @@ export const useDescricoesList = () => {
 };
 
 // Hook para formulário de descrição
-export const useDescricaoForm = (initialData = null) => {
+export const useDescricaoForm = (initialData = null, currentUser = null) => {
   const { createDescricao, updateDescricao } = useDescricoes();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     descricao: initialData?.descricao || '',
     subcontasiafi: initialData?.subcontasiafi || '',
-    vidautil: initialData?.vidautil || '',
-    useradd: initialData?.useradd || '',
+    vidautil: initialData?.vidautil !== undefined && initialData?.vidautil !== null ? initialData?.vidautil.toString() : '',
+    useradd: initialData?.useradd || currentUser || '', // Preencher com o usuário logado
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  
+
   // Usar refs para armazenar valores e funções para evitar loops infinitos
   const formDataRef = useRef(formData);
   const initialDataRef = useRef(initialData);
   const createDescricaoRef = useRef(createDescricao);
   const updateDescricaoRef = useRef(updateDescricao);
-  
+
   // Atualizar refs quando os valores mudarem
   formDataRef.current = formData;
   initialDataRef.current = initialData;
@@ -106,11 +106,26 @@ export const useDescricaoForm = (initialData = null) => {
       newErrors.descricao = 'Descrição deve ter pelo menos 2 caracteres';
     }
 
-    if (formDataRef.current.vidautil !== '' && formDataRef.current.vidautil !== null) {
+    // Tornar o campo Subconta SIAFI obrigatório
+    if (!formDataRef.current.subcontasiafi.trim()) {
+      newErrors.subcontasiafi = 'Subconta SIAFI é obrigatória';
+    } else if (formDataRef.current.subcontasiafi.trim().length < 2) {
+      newErrors.subcontasiafi = 'Subconta SIAFI deve ter pelo menos 2 caracteres';
+    }
+
+    // Tornar o campo Vida Útil obrigatório
+    if (formDataRef.current.vidautil === '' || formDataRef.current.vidautil === null || formDataRef.current.vidautil === undefined) {
+      newErrors.vidautil = 'Vida útil é obrigatória';
+    } else {
       const vidautil = parseInt(formDataRef.current.vidautil);
       if (isNaN(vidautil) || vidautil < 0 || vidautil > 100) {
         newErrors.vidautil = 'Vida útil deve ser um número entre 0 e 100';
       }
+    }
+
+    // Tornar o campo Usuário obrigatório
+    if (!formDataRef.current.useradd.trim()) {
+      newErrors.useradd = 'Usuário é obrigatório';
     }
 
     setErrors(newErrors);
@@ -166,7 +181,7 @@ export const useDescricaoForm = (initialData = null) => {
         message: error.response?.data?.message,
         status: error.response?.status
       });
-      
+
       // Extrair mensagem de erro mais específica
       let errorMessage = 'Erro interno do servidor';
       if (error.response?.data?.message) {
@@ -174,7 +189,7 @@ export const useDescricaoForm = (initialData = null) => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       console.log('Mensagem de erro que será exibida:', errorMessage);
       toast.error(`${errorMessage}`);
       return false;
@@ -214,7 +229,7 @@ export const useDescricaoForm = (initialData = null) => {
         message: error.response?.data?.message,
         status: error.response?.status
       });
-      
+
       // Extrair mensagem de erro mais específica
       let errorMessage = 'Erro interno do servidor';
       if (error.response?.data?.message) {
@@ -222,7 +237,7 @@ export const useDescricaoForm = (initialData = null) => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       console.log('Mensagem de erro que será exibida:', errorMessage);
       toast.error(`${errorMessage}`);
       return false;
@@ -236,11 +251,11 @@ export const useDescricaoForm = (initialData = null) => {
     setFormData({
       descricao: initialDataRef.current?.descricao || '',
       subcontasiafi: initialDataRef.current?.subcontasiafi || '',
-      vidautil: initialDataRef.current?.vidautil || '',
-      useradd: initialDataRef.current?.useradd || '',
+      vidautil: initialDataRef.current?.vidautil !== undefined && initialDataRef.current?.vidautil !== null ? initialDataRef.current?.vidautil.toString() : '',
+      useradd: initialDataRef.current?.useradd || currentUser || '', // Preencher com o usuário logado
     });
     setErrors({});
-  }, []);
+  }, [currentUser]);
 
   return {
     formData,
@@ -251,7 +266,18 @@ export const useDescricaoForm = (initialData = null) => {
     submitFormWithoutValidation,
     validateForm,
     resetForm,
-    isValid: Object.keys(errors).length === 0 && formData.descricao.trim(),
+    isValid: Object.keys(errors).length === 0 && 
+             formData.descricao.trim() && 
+             formData.descricao.trim().length >= 2 &&
+             formData.subcontasiafi.trim() && 
+             formData.subcontasiafi.trim().length >= 2 &&
+             formData.vidautil !== '' && 
+             formData.vidautil !== null && 
+             formData.vidautil !== undefined &&
+             !isNaN(parseInt(formData.vidautil)) &&
+             parseInt(formData.vidautil) >= 0 && 
+             parseInt(formData.vidautil) <= 100 &&
+             formData.useradd.trim(),
   };
 };
 
@@ -260,13 +286,13 @@ export const useDescricaoSearch = () => {
   const { searchByCodigo, searchByTermo, searchResults, searchLoading, clearSearch } = useDescricoes();
   const [searchType, setSearchType] = useState('termo'); // 'codigo' ou 'termo'
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Usar refs para armazenar valores e funções para evitar loops infinitos
   const searchTermRef = useRef(searchTerm);
   const searchTypeRef = useRef(searchType);
   const searchByCodigoRef = useRef(searchByCodigo);
   const searchByTermoRef = useRef(searchByTermo);
-  
+
   // Atualizar refs quando os valores mudarem
   searchTermRef.current = searchTerm;
   searchTypeRef.current = searchType;
@@ -311,11 +337,11 @@ export const useDescricaoSearch = () => {
 export const useDescricaoActions = () => {
   const { deleteDescricao, selectDescricao } = useDescricoes();
   const [actionLoading, setActionLoading] = useState(false);
-  
+
   // Usar refs para armazenar funções e evitar loops infinitos
   const deleteDescricaoRef = useRef(deleteDescricao);
   const selectDescricaoRef = useRef(selectDescricao);
-  
+
   // Atualizar refs quando os valores mudarem
   deleteDescricaoRef.current = deleteDescricao;
   selectDescricaoRef.current = selectDescricao;
@@ -323,7 +349,7 @@ export const useDescricaoActions = () => {
   // Excluir descrição
   const handleDelete = useCallback(async (id) => {
     setActionLoading(true);
-    
+
     try {
       await deleteDescricaoRef.current(id);
       return true;

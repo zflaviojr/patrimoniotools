@@ -61,6 +61,17 @@ function App() {
               />
               
               <Route 
+                path="/descricoes/edit/:id" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Descricoes />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
                 path="/usuarios" 
                 element={
                   <ProtectedRoute>

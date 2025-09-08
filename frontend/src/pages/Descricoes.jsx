@@ -1,26 +1,51 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { DescricaoProvider } from '../context/DescricaoContext.jsx';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { DescricaoProvider, useDescricoes } from '../context/DescricaoContext.jsx';
 import { useProtectedRoute } from '../hooks/useAuth.js';
 import DescricaoList from '../components/descricoes/DescricaoList.jsx';
 import DescricaoSearch from '../components/descricoes/DescricaoSearch.jsx';
 import DescricaoForm from '../components/descricoes/DescricaoForm.jsx';
 import { Card, Button, Modal, FormModal } from '../components/common/index.js';
 
-const Descricoes = () => {
-  // Proteger rota
+// Componente interno que usa o contexto
+const DescricoesContent = () => {
   const { loading: authLoading } = useProtectedRoute();
   const navigate = useNavigate();
+  const { id } = useParams(); // Get ID from URL params
+  const { fetchDescricaoById } = useDescricoes();
   
   // Estados locais
   const [activeTab, setActiveTab] = useState('list');
   const [formModal, setFormModal] = useState({ open: false, descricao: null });
   const [selectedDescricao, setSelectedDescricao] = useState(null);
+  const [editingDescricao, setEditingDescricao] = useState(null);
+  const [loadingDescricao, setLoadingDescricao] = useState(false);
 
   // Se ainda está carregando autenticação, não renderizar
   if (authLoading) {
     return null;
   }
+
+  // Carregar descrição para edição quando houver ID na URL
+  useEffect(() => {
+    if (id) {
+      const loadDescricao = async () => {
+        setLoadingDescricao(true);
+        try {
+          const descricao = await fetchDescricaoById(id);
+          setEditingDescricao(descricao);
+          setFormModal({ open: true, descricao });
+        } catch (error) {
+          console.error('Erro ao carregar descrição:', error);
+          navigate('/descricoes');
+        } finally {
+          setLoadingDescricao(false);
+        }
+      };
+      
+      loadDescricao();
+    }
+  }, [id, fetchDescricaoById, navigate]);
 
   // Abas disponíveis
   const tabs = [
@@ -66,211 +91,233 @@ const Descricoes = () => {
   // Lidar com sucesso do formulário
   const handleFormSuccess = () => {
     setFormModal({ open: false, descricao: null });
+    setEditingDescricao(null);
     if (activeTab !== 'list') {
       setActiveTab('list');
+    }
+    // If we were editing via URL, navigate back to main page
+    if (id) {
+      navigate('/descricoes');
     }
   };
 
   // Lidar com seleção de descrição na busca
   const handleDescricaoSelect = (descricao) => {
-    setSelectedDescricao(descricao);
+    // Navigate to edit page
+    navigate(`/descricoes/edit/${descricao.id}`);
+  };
+
+  // Fechar formulário
+  const handleCloseForm = () => {
+    setFormModal({ open: false, descricao: null });
+    setEditingDescricao(null);
+    // If we were editing via URL, navigate back to main page
+    if (id) {
+      navigate('/descricoes');
+    }
   };
 
   return (
-    <DescricaoProvider>
-      <div className="flex-1 bg-gray-50">
-        {/* Navegação */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Breadcrumb */}
-              <nav className="flex items-center space-x-2 text-sm">
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  Dashboard
-                </button>
-                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-                <span className="text-gray-900 font-medium">Descrições</span>
-              </nav>
+    <div className="flex-1 bg-gray-50">
+      {/* Navegação */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Breadcrumb */}
+            <nav className="flex items-center space-x-2 text-sm">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Dashboard
+              </button>
+              <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="text-gray-900 font-medium">Descrições</span>
+            </nav>
 
-              {/* Ações rápidas */}
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() => navigate('/dashboard')}
-                  leftIcon={
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                  }
-                >
-                  Voltar
-                </Button>
-              </div>
+            {/* Ações rápidas */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => navigate('/dashboard')}
+                leftIcon={
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                }
+              >
+                Voltar
+              </Button>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Conteúdo principal */}
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            {/* Cabeçalho da página */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Gestão de Descrições
-              </h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Gerencie o cadastro de descrições, consulte informações e mantenha os dados atualizados
-              </p>
-            </div>
+      {/* Conteúdo principal */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {/* Cabeçalho da página */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Gestão de Descrições
+            </h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Gerencie o cadastro de descrições, consulte informações e mantenha os dados atualizados
+            </p>
+          </div>
 
-            {/* Abas de navegação */}
-            <div className="mb-6">
-              <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`
-                        group inline-flex items-center py-2 px-1 border-b-2 font-medium text-sm
-                        ${activeTab === tab.id
-                          ? 'border-primary-500 text-primary-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }
-                      `}
-                    >
-                      <span className="mr-2">{tab.icon}</span>
-                      {tab.name}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-            </div>
-
-            {/* Conteúdo das abas */}
-            <div className="tab-content">
-              {activeTab === 'list' && (
-                <DescricaoList
-                  onEdit={handleEdit}
-                  onCreate={handleCreate}
-                />
-              )}
-
-              {activeTab === 'search' && (
-                <DescricaoSearch
-                  onDescricaoSelect={handleDescricaoSelect}
-                />
-              )}
-
-              {activeTab === 'create' && (
-                <div className="max-w-2xl mx-auto">
-                  <DescricaoForm
-                    onSuccess={() => setActiveTab('list')}
-                    onCancel={() => setActiveTab('list')}
-                  />
-                </div>
-              )}
+          {/* Abas de navegação */}
+          <div className="mb-6">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      group inline-flex items-center py-2 px-1 border-b-2 font-medium text-sm
+                      ${activeTab === tab.id
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }
+                    `}
+                  >
+                    <span className="mr-2">{tab.icon}</span>
+                    {tab.name}
+                  </button>
+                ))}
+              </nav>
             </div>
           </div>
-        </main>
 
-        {/* Modal de formulário */}
-        <FormModal
-          isOpen={formModal.open}
-          onClose={() => setFormModal({ open: false, descricao: null })}
-          title={formModal.descricao ? 'Editar Descrição' : 'Nova Descrição'}
-          size="medium"
-        >
-          <DescricaoForm
-            descricao={formModal.descricao}
-            onSuccess={handleFormSuccess}
-            showButtons={false}
-          />
-        </FormModal>
+          {/* Conteúdo das abas */}
+          <div className="tab-content">
+            {activeTab === 'list' && (
+              <DescricaoList
+                onEdit={handleEdit}
+                onCreate={handleCreate}
+              />
+            )}
 
-        {/* Modal de detalhes da descrição selecionada */}
-        {selectedDescricao && (
-          <Modal
-            isOpen={!!selectedDescricao}
-            onClose={() => setSelectedDescricao(null)}
-            title={`Detalhes - ${selectedDescricao.descricao}`}
-            size="medium"
-            footer={
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => setSelectedDescricao(null)}
-                >
-                  Fechar
-                </Button>
-                <Button
-                  onClick={() => {
-                    handleEdit(selectedDescricao);
-                    setSelectedDescricao(null);
-                  }}
-                >
-                  Editar
-                </Button>
+            {activeTab === 'search' && (
+              <DescricaoSearch
+                onDescricaoSelect={handleDescricaoSelect}
+              />
+            )}
+
+            {activeTab === 'create' && (
+              <div className="max-w-2xl mx-auto">
+                <DescricaoForm
+                  onSuccess={() => setActiveTab('list')}
+                  onCancel={() => setActiveTab('list')}
+                />
               </div>
-            }
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Código
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {selectedDescricao.codigo}
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Descrição
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {selectedDescricao.descricao}
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Subconta SIAFI
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {selectedDescricao.subcontasiafi || 'Não definido'}
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Vida Útil
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {selectedDescricao.vidautil ? `${selectedDescricao.vidautil} ano(s)` : 'Não definido'}
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Usuário
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {selectedDescricao.useradd || 'Não definido'}
-                  </p>
-                </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Modal de formulário */}
+      <FormModal
+        isOpen={formModal.open}
+        onClose={handleCloseForm}
+        title={formModal.descricao || editingDescricao ? 'Editar Descrição' : 'Nova Descrição'}
+        size="medium"
+      >
+        <DescricaoForm
+          descricao={formModal.descricao || editingDescricao}
+          onSuccess={handleFormSuccess}
+          showButtons={false}
+        />
+      </FormModal>
+
+      {/* Modal de detalhes da descrição selecionada */}
+      {selectedDescricao && (
+        <Modal
+          isOpen={!!selectedDescricao}
+          onClose={() => setSelectedDescricao(null)}
+          title={`Detalhes - ${selectedDescricao.descricao}`}
+          size="medium"
+          footer={
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="secondary"
+                onClick={() => setSelectedDescricao(null)}
+              >
+                Fechar
+              </Button>
+              <Button
+                onClick={() => {
+                  handleEdit(selectedDescricao);
+                  setSelectedDescricao(null);
+                }}
+              >
+                Editar
+              </Button>
+            </div>
+          }
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Código
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedDescricao.codigo}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Descrição
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedDescricao.descricao}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Subconta SIAFI
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedDescricao.subcontasiafi || 'Não definido'}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Vida Útil
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedDescricao.vidautil ? `${selectedDescricao.vidautil} ano(s)` : 'Não definido'}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Usuário
+                </label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedDescricao.useradd || 'Não definido'}
+                </p>
               </div>
             </div>
-          </Modal>
-        )}
-      </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+const Descricoes = () => {
+  return (
+    <DescricaoProvider>
+      <DescricoesContent />
     </DescricaoProvider>
   );
 };

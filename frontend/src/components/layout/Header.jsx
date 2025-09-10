@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useLogout } from '../../hooks/useAuth.js';
 import { Button } from '../common/index.js';
@@ -8,8 +8,14 @@ const Header = () => {
   const { user } = useAuth();
   const { handleLogout } = useLogout();
   const navigate = useNavigate();
+  const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Determinar qual link mostrar com base na rota atual
+  const isInDescricoes = location.pathname.startsWith('/descricoes');
+  const isInResponsaveis = location.pathname.startsWith('/responsaveis');
+  const isOutsideDashboard = !location.pathname.startsWith('/dashboard') && location.pathname !== '/';
 
   const handleLogoutClick = async () => {
     setUserMenuOpen(false);
@@ -57,18 +63,48 @@ const Header = () => {
 
           {/* Navegação Central */}
           <nav className="hidden lg:flex space-x-8">
-            <a 
-              href="/dashboard" 
-              className="text-blue-200 hover:text-white transition-colors duration-200 font-medium"
-            >
-              Dashboard
-            </a>
-            <a 
-              href="/responsaveis" 
-              className="text-blue-200 hover:text-white transition-colors duration-200 font-medium"
-            >
-              Responsáveis
-            </a>
+            {isOutsideDashboard && (
+              <>
+                <a 
+                  href="/dashboard" 
+                  className="text-blue-200 hover:text-white transition-colors duration-200 font-medium"
+                >
+                  Dashboard
+                </a>
+                {isInDescricoes && (
+                  <a 
+                    href="/responsaveis" 
+                    className="text-blue-200 hover:text-white transition-colors duration-200 font-medium"
+                  >
+                    Responsáveis
+                  </a>
+                )}
+                {isInResponsaveis && (
+                  <a 
+                    href="/descricoes" 
+                    className="text-blue-200 hover:text-white transition-colors duration-200 font-medium"
+                  >
+                    Descrições
+                  </a>
+                )}
+                {!isInDescricoes && !isInResponsaveis && (
+                  <>
+                    <a 
+                      href="/responsaveis" 
+                      className="text-blue-200 hover:text-white transition-colors duration-200 font-medium"
+                    >
+                      Responsáveis
+                    </a>
+                    <a 
+                      href="/descricoes" 
+                      className="text-blue-200 hover:text-white transition-colors duration-200 font-medium"
+                    >
+                      Descrições
+                    </a>
+                  </>
+                )}
+              </>
+            )}
           </nav>
 
           {/* Menu do Usuário */}
@@ -177,13 +213,46 @@ const Header = () => {
               >
                 Dashboard
               </a>
-              <a 
-                href="/responsaveis" 
-                className="block text-blue-200 hover:text-white transition-colors duration-200 font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Responsáveis
-              </a>
+              {isOutsideDashboard && (
+                <>
+                  {isInDescricoes && (
+                    <a 
+                      href="/responsaveis" 
+                      className="block text-blue-200 hover:text-white transition-colors duration-200 font-medium py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Responsáveis
+                    </a>
+                  )}
+                  {isInResponsaveis && (
+                    <a 
+                      href="/descricoes" 
+                      className="block text-blue-200 hover:text-white transition-colors duration-200 font-medium py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Descrições
+                    </a>
+                  )}
+                  {!isInDescricoes && !isInResponsaveis && (
+                    <>
+                      <a 
+                        href="/responsaveis" 
+                        className="block text-blue-200 hover:text-white transition-colors duration-200 font-medium py-2"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Responsáveis
+                      </a>
+                      <a 
+                        href="/descricoes" 
+                        className="block text-blue-200 hover:text-white transition-colors duration-200 font-medium py-2"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Descrições
+                      </a>
+                    </>
+                  )}
+                </>
+              )}
             </nav>
           </div>
         )}

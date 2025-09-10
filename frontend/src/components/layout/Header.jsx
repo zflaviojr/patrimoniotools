@@ -35,20 +35,13 @@ const Header = () => {
           {/* Logo UFCG e Branding */}
           <div className="flex items-center space-x-4">
             {/* Logo UFCG */}
-            <a 
-              href="https://portal.ufcg.edu.br" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex-shrink-0"
-            >
-              <div className="h-22 w-22 bg-transparent rounded-lg flex items-center justify-center hover:bg-blue-800 transition-colors">
-                <img 
-                  src="https://apps.sti.ufcg.edu.br/resultados-processos-seletivos/2/_next/image?url=%2Fresultados-processos-seletivos%2F2%2Flogo_ufcg_nova_transparente_branca.png&w=96&q=75" 
-                  alt="Logo UFCG" 
-                  className="h-22 w-22 object-contain"
-                />
-              </div>
-            </a>
+            <div className="h-22 w-22 bg-transparent rounded-lg flex items-center justify-center hover:bg-blue-800 transition-colors">
+              <img 
+                src="https://apps.sti.ufcg.edu.br/resultados-processos-seletivos/2/_next/image?url=%2Fresultados-processos-seletivos%2F2%2Flogo_ufcg_nova_transparente_branca.png&w=96&q=75" 
+                alt="Logo UFCG" 
+                className="h-22 w-22 object-contain"
+              />
+            </div>
             
             {/* Branding PatrimonioTools */}
             <div className="flex flex-col">
@@ -56,7 +49,7 @@ const Header = () => {
                 PatrimonioTools
               </h1>
               <p className="text-sm text-ufcg-light-gray font-institutional">
-                Sistema de Gestão de Patrimônio - UFCG
+                Utilitários do Sistema de Gestão de Patrimônio - UFCG
               </p>
             </div>
           </div>
@@ -110,12 +103,16 @@ const Header = () => {
           {/* Menu do Usuário */}
           <div className="flex items-center space-x-4">
             
-            {/* Notificações */}
-            <button className="text-blue-200 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-blue-800">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1" />
+            {/* Botão de sair - Desktop */}
+            <button
+              onClick={handleLogoutClick}
+              className="hidden md:flex items-center space-x-1 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 hover:bg-blue-800 transition-colors duration-200 p-2"
+              title="Sair do sistema"
+            >
+              <svg className="h-5 w-5 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
+              <span className="text-blue-200 font-medium">Sair</span>
             </button>
 
             {/* Menu Mobile Toggle */}
@@ -186,9 +183,10 @@ const Header = () => {
                   </button>
                   
                   <div className="border-t border-gray-100 mt-2">
+                    {/* Botão de sair no dropdown mobile */}
                     <button
                       onClick={handleLogoutClick}
-                      className="flex items-center w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors duration-200"
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors duration-200 md:hidden"
                     >
                       <svg className="h-4 w-4 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

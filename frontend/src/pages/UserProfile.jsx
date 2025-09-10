@@ -5,12 +5,14 @@ import { Button } from '../components/common';
 import { Input } from '../components/common';
 import { useToast } from '../context/ToastContext';
 import { authService } from '../services/authService';
+import ChangePasswordModal from '../components/users/ChangePasswordModal';
 
 const UserProfile = () => {
   const { user, updateUser } = useAuth();
   const { showToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [profileData, setProfileData] = useState({
     email: '',
     telefone: ''
@@ -104,6 +106,15 @@ const UserProfile = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Modal de Alteração de Senha */}
+      <ChangePasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSuccess={() => {
+          // Opcional: mostrar mensagem adicional após alterar senha
+        }}
+      />
+
       {/* Page Header */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between">
@@ -306,9 +317,7 @@ const UserProfile = () => {
             <div className="pt-4 space-y-3">
               <Button
                 className="w-full justify-center bg-ufcg-light-blue hover:bg-ufcg-blue text-white"
-                onClick={() => {
-                  showToast('Funcionalidade em desenvolvimento', 'info');
-                }}
+                onClick={() => setShowPasswordModal(true)}
               >
                 <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v-2l-2.257-2.257A6 6 0 0112 5zm-6 6l3 3m0 0l-3-3m3 3V9a6 6 0 016-6v0a6 6 0 016 6v3" />

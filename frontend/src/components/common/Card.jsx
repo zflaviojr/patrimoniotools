@@ -133,15 +133,16 @@ export const ModuleCard = ({
           : 'hover:scale-105 active:scale-95'
         }
         ${className}
+        h-full flex flex-col
       `}
       variant="outlined"
       onClick={handleClick}
       {...props}
     >
-      <div className="text-center">
+      <div className="text-center flex flex-col flex-grow">
         {/* Ícone */}
         {icon && (
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100 mb-4">
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100 mb-4 flex-shrink-0">
             {typeof icon === 'string' ? (
               <span className="text-2xl">{icon}</span>
             ) : (
@@ -153,13 +154,13 @@ export const ModuleCard = ({
         )}
         
         {/* Título */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 flex-shrink-0">
           {title}
         </h3>
         
         {/* Descrição */}
         {description && (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 flex-grow">
             {description}
           </p>
         )}

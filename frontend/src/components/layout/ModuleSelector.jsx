@@ -118,7 +118,7 @@ const ModuleSelector = () => {
       {/* Grid de módulos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {modules.map((module) => (
-          <div key={module.id} className="relative">
+          <div key={module.id} className="relative flex flex-col">
             <ModuleCard
               title={module.title}
               description={module.description}
@@ -130,6 +130,7 @@ const ModuleSelector = () => {
                   ? 'cursor-pointer hover:border-primary-300' 
                   : 'cursor-not-allowed opacity-75'
                 }
+                flex-1
               `}
             />
             

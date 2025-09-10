@@ -203,12 +203,6 @@ const LoginForm = () => {
           </div>
         </form>
         
-        {/* Informações de acesso padrão */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            Acesso padrão: <span className="font-medium">admin</span> | Senha: <span className="font-medium">admin123</span>
-          </p>
-        </div>
       </div>
     </div>
   );

@@ -1,131 +1,137 @@
 // Classes de erro personalizadas
-export class ValidationError extends Error {
-  constructor(message, errors = []) {
+export class AppError extends Error {
+  constructor(message, statusCode, isOperational = true) {
     super(message);
-    this.name = 'ValidationError';
-    this.errors = errors;
-    this.statusCode = 400;
+    this.statusCode = statusCode;
+    this.isOperational = isOperational;
+    this.name = this.constructor.name;
+    
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
-export class NotFoundError extends Error {
-  constructor(message = 'Recurso não encontrado') {
-    super(message);
-    this.name = 'NotFoundError';
-    this.statusCode = 404;
+export class ValidationError extends AppError {
+  constructor(message, details = null) {
+    super(message, 400);
+    this.details = details;
   }
 }
 
-export class ConflictError extends Error {
-  constructor(message = 'Conflito de dados') {
-    super(message);
-    this.name = 'ConflictError';
-    this.statusCode = 409;
+export class UnauthorizedError extends AppError {
+  constructor(message) {
+    super(message, 401);
   }
 }
 
-export class UnauthorizedError extends Error {
-  constructor(message = 'Acesso não autorizado') {
-    super(message);
-    this.name = 'UnauthorizedError';
-    this.statusCode = 401;
+export class ForbiddenError extends AppError {
+  constructor(message) {
+    super(message, 403);
   }
 }
 
-export class ForbiddenError extends Error {
-  constructor(message = 'Acesso proibido') {
-    super(message);
-    this.name = 'ForbiddenError';
-    this.statusCode = 403;
+export class NotFoundError extends AppError {
+  constructor(message) {
+    super(message, 404);
   }
 }
+
+export class ConflictError extends AppError {
+  constructor(message) {
+    super(message, 409);
+  }
+}
+
+export class LockedError extends AppError {
+  constructor(message) {
+    super(message, 423); // 423 Locked
+  }
+}
+
+// Middleware para rotas não encontradas
+export const notFoundHandler = (req, res, next) => {
+  const error = new NotFoundError(`Rota não encontrada: ${req.originalUrl}`);
+  next(error);
+};
 
 // Middleware de tratamento de erros
 export const errorHandler = (err, req, res, next) => {
-  console.error('Erro capturado:', {
-    name: err.name,
-    message: err.message,
-    stack: err.stack,
-    url: req.url,
-    method: req.method
-  });
-
-  // Erro de validação
-  if (err instanceof ValidationError) {
-    return res.status(err.statusCode).json({
+  console.error('Erro não tratado:', err);
+  
+  // Erro de validação do Express Validator
+  if (err.errors) {
+    return res.status(400).json({
       success: false,
-      message: err.message,
-      errors: err.errors
+      message: 'Erro de validação',
+      errors: err.errors.map(e => e.msg)
     });
   }
-
-  // Erro de recurso não encontrado
-  if (err instanceof NotFoundError) {
-    return res.status(err.statusCode).json({
-      success: false,
-      message: err.message
-    });
-  }
-
-  // Erro de conflito (ex: matrícula duplicada)
-  if (err instanceof ConflictError) {
-    return res.status(err.statusCode).json({
-      success: false,
-      message: err.message
-    });
-  }
-
-  // Erro de autorização
-  if (err instanceof UnauthorizedError) {
-    return res.status(err.statusCode).json({
-      success: false,
-      message: err.message
-    });
-  }
-
-  // Erro de acesso proibido
-  if (err instanceof ForbiddenError) {
-    return res.status(err.statusCode).json({
-      success: false,
-      message: err.message
-    });
-  }
-
-  // Erro de constraint única do PostgreSQL
-  if (err.code === '23505') {
-    let message = 'Dados duplicados';
-    
-    if (err.constraint === 'uk_matricula') {
-      message = 'Matrícula já cadastrada';
-    } else if (err.constraint === 'users_username_key') {
-      message = 'Nome de usuário já existe';
+  
+  // Erros personalizados
+  if (err instanceof AppError) {
+    // Erro de validação com detalhes
+    if (err instanceof ValidationError && err.details) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+        errors: err.details
+      });
     }
     
-    return res.status(409).json({
+    // Preparar resposta base
+    const response = {
       success: false,
-      message
+      message: err.message
+    };
+    
+    // Adicionar informações extras se disponíveis
+    if (err.remainingAttempts !== undefined) {
+      response.remainingAttempts = err.remainingAttempts;
+    }
+    
+    return res.status(err.statusCode).json(response);
+  }
+  
+  // Erro de JWT
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Token inválido'
     });
   }
-
-  // Erro de conexão com banco
-  if (err.code === 'ECONNREFUSED') {
+  
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Token expirado'
+    });
+  }
+  
+  // Erro de conexão com banco de dados
+  if (err.name === 'ConnectionError' || err.name === 'SequelizeConnectionError') {
     return res.status(503).json({
       success: false,
       message: 'Serviço temporariamente indisponível'
     });
   }
-
-  // Erro interno do servidor
+  
+  // Erro de constraint do banco de dados
+  if (err.code === '23505') { // Unique constraint violation
+    return res.status(409).json({
+      success: false,
+      message: 'Registro já existe'
+    });
+  }
+  
+  // Erro padrão
   res.status(500).json({
     success: false,
     message: 'Erro interno do servidor'
   });
 };
 
-// Middleware para rotas não encontradas
-export const notFoundHandler = (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Rota ${req.method} ${req.url} não encontrada`
-  });
+// Middleware para capturar erros assíncronos
+export const catchAsync = (fn) => {
+  return (req, res, next) => {
+    fn(req, res, next).catch(next);
+  };
 };

@@ -1,6 +1,7 @@
 import AuthService from '../services/authService.js';
 import { body } from 'express-validator';
 import { checkValidationErrors } from '../utils/validation.js';
+import PasswordPolicyService from '../services/passwordPolicyService.js';
 
 class AuthController {
   // Validações para login
@@ -24,8 +25,13 @@ class AuthController {
       .withMessage('Username pode conter apenas letras, números, pontos, traços e sublinhados')
       .trim(),
     body('password')
-      .isLength({ min: 6 })
-      .withMessage('Senha deve ter pelo menos 6 caracteres'),
+      .custom((value) => {
+        const validation = PasswordPolicyService.validatePassword(value);
+        if (!validation.isValid) {
+          throw new Error(validation.errors.join(', '));
+        }
+        return true;
+      }),
     body('email')
       .optional()
       .isEmail()
@@ -56,8 +62,9 @@ class AuthController {
   static async login(req, res, next) {
     try {
       const { username, password } = req.body;
+      const ipAddress = req.ip || req.connection.remoteAddress;
       
-      const result = await AuthService.login(username, password);
+      const result = await AuthService.login(username, password, ipAddress);
       
       res.json({
         success: true,
@@ -66,6 +73,7 @@ class AuthController {
       });
       
     } catch (error) {
+      console.error('Erro no controlador de login:', error);
       next(error);
     }
   }
@@ -74,8 +82,9 @@ class AuthController {
   static async register(req, res, next) {
     try {
       const userData = req.body;
+      const ipAddress = req.ip || req.connection.remoteAddress;
       
-      const result = await AuthService.register(userData);
+      const result = await AuthService.register(userData, ipAddress);
       
       res.status(201).json({
         success: true,
@@ -126,6 +135,7 @@ class AuthController {
     try {
       const { oldPassword, newPassword } = req.body;
       const userId = req.user.id;
+      const ipAddress = req.ip || req.connection.remoteAddress;
       
       if (!oldPassword || !newPassword) {
         return res.status(400).json({
@@ -134,7 +144,7 @@ class AuthController {
         });
       }
       
-      const result = await AuthService.changePassword(userId, oldPassword, newPassword);
+      const result = await AuthService.changePassword(userId, oldPassword, newPassword, ipAddress);
       
       res.json({
         success: true,
@@ -164,8 +174,9 @@ class AuthController {
     try {
       const { email, telefone } = req.body;
       const userId = req.user.id;
+      const ipAddress = req.ip || req.connection.remoteAddress;
       
-      const result = await AuthService.updateProfile(userId, { email, telefone });
+      const result = await AuthService.updateProfile(userId, { email, telefone }, ipAddress);
       
       res.json({
         success: true,

@@ -10,6 +10,9 @@ class User {
     this.password = data.password;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
+    // Campos adicionados para política de senhas
+    this.password_last_changed = data.password_last_changed;
+    this.password_expires_at = data.password_expires_at;
   }
 
   // Buscar usuário por username
@@ -50,11 +53,15 @@ class User {
       // Hash da senha
       const hashedPassword = await bcrypt.hash(password, 10);
       
+      // Calcular data de expiração (90 dias)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 90);
+      
       const result = await query(
-        `INSERT INTO users (username, password, email, telefone, created_at, updated_at) 
-         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) 
+        `INSERT INTO users (username, password, email, telefone, created_at, updated_at, password_last_changed, password_expires_at) 
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5) 
          RETURNING *`,
-        [username, hashedPassword, email, telefone]
+        [username, hashedPassword, email, telefone, expiresAt]
       );
       
       const user = new User(result.rows[0]);
@@ -70,7 +77,19 @@ class User {
   // Verificar senha
   async verifyPassword(password) {
     try {
-      return await bcrypt.compare(password, this.password);
+      console.log('Verificando senha...');
+      console.log('Senha fornecida:', password);
+      console.log('Hash armazenado:', this.password);
+      
+      // Verificar se os parâmetros são válidos
+      if (!password || !this.password) {
+        console.log('Senha ou hash inválidos');
+        return false;
+      }
+      
+      const result = await bcrypt.compare(password, this.password);
+      console.log('Resultado da comparação:', result);
+      return result;
     } catch (error) {
       console.error('Erro ao verificar senha:', error);
       return false;
@@ -82,9 +101,13 @@ class User {
     try {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       
+      // Calcular data de expiração (90 dias)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 90);
+      
       await query(
-        'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-        [hashedPassword, this.id]
+        'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP, password_last_changed = CURRENT_TIMESTAMP, password_expires_at = $2 WHERE id = $3',
+        [hashedPassword, expiresAt, this.id]
       );
       
       return true;
@@ -105,7 +128,7 @@ class User {
   static async findAll() {
     try {
       const result = await query(
-        'SELECT id, username, email, telefone, created_at, updated_at FROM users ORDER BY username'
+        'SELECT id, username, email, telefone, created_at, updated_at, password_last_changed, password_expires_at FROM users ORDER BY username'
       );
       
       return result.rows.map(row => new User(row));
@@ -120,7 +143,7 @@ class User {
     try {
       const offset = (page - 1) * limit;
       let query_text = `
-        SELECT id, username, email, telefone, created_at, updated_at 
+        SELECT id, username, email, telefone, created_at, updated_at, password_last_changed, password_expires_at
         FROM users 
       `;
       let countQuery = 'SELECT COUNT(*) FROM users ';
@@ -187,6 +210,13 @@ class User {
         const hashedPassword = await bcrypt.hash(password, 10);
         updates.push(`password = $${params.length + 1}`);
         params.push(hashedPassword);
+        
+        // Atualizar também as datas de senha
+        updates.push(`password_last_changed = CURRENT_TIMESTAMP`);
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 90);
+        updates.push(`password_expires_at = $${params.length + 1}`);
+        params.push(expiresAt);
       }
       
       if (updates.length === 0) {
@@ -195,7 +225,7 @@ class User {
       
       updates.push(`updated_at = CURRENT_TIMESTAMP`);
       queryText += updates.join(', ');
-      queryText += ` WHERE id = $${params.length + 1} RETURNING id, username, email, telefone, created_at, updated_at`;
+      queryText += ` WHERE id = $${params.length + 1} RETURNING id, username, email, telefone, created_at, updated_at, password_last_changed, password_expires_at`;
       params.push(id);
       
       const result = await query(queryText, params);
@@ -250,7 +280,7 @@ class User {
       
       updates.push(`updated_at = CURRENT_TIMESTAMP`);
       queryText += updates.join(', ');
-      queryText += ` WHERE id = $${params.length + 1} RETURNING id, username, email, telefone, created_at, updated_at`;
+      queryText += ` WHERE id = $${params.length + 1} RETURNING id, username, email, telefone, created_at, updated_at, password_last_changed, password_expires_at`;
       params.push(this.id);
       
       const result = await query(queryText, params);
@@ -264,6 +294,8 @@ class User {
       this.email = updatedUser.email;
       this.telefone = updatedUser.telefone;
       this.updated_at = updatedUser.updated_at;
+      this.password_last_changed = updatedUser.password_last_changed;
+      this.password_expires_at = updatedUser.password_expires_at;
       
       return this.toSafeObject();
     } catch (error) {

@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 // Hook para gerenciar autenticação com navegação
 export const useAuthNavigation = () => {
@@ -60,8 +60,9 @@ export const useGuestRoute = () => {
 export const useLogin = () => {
   const auth = useAuth();
   const navigate = useNavigate();
+  const [remainingAttempts, setRemainingAttempts] = useState(null);
 
-  const handleLogin = async (credentials, options = {}) => {
+  const handleLogin = useCallback(async (credentials, options = {}) => {
     try {
       await auth.login(credentials);
       
@@ -69,16 +70,36 @@ export const useLogin = () => {
       const redirectTo = options.redirectTo || '/dashboard';
       navigate(redirectTo);
       
+      // Resetar tentativas restantes após login bem-sucedido
+      setRemainingAttempts(null);
+      
       return true;
     } catch (error) {
-      console.error('Erro no login:', error);
-      return false;
+      console.error('Erro no login (hook useLogin):', error);
+      
+      // Verificar se o erro contém informações sobre tentativas restantes
+      if (error.response && error.response.data && error.response.data.remainingAttempts !== undefined) {
+        setRemainingAttempts(error.response.data.remainingAttempts);
+      } else {
+        // Se não houver informações de tentativas, resetar
+        setRemainingAttempts(null);
+      }
+      
+      // Não estamos ocultando o erro aqui, ele será tratado pelo contexto
+      throw error;
     }
-  };
+  }, [auth, navigate]);
+
+  // Função para limpar as tentativas restantes
+  const clearRemainingAttempts = useCallback(() => {
+    setRemainingAttempts(null);
+  }, []);
 
   return {
     ...auth,
     handleLogin,
+    remainingAttempts,
+    setRemainingAttempts: clearRemainingAttempts,
   };
 };
 

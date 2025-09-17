@@ -1,4 +1,4 @@
-import { api, setAuthToken } from './api.js';
+import { api, setAuthToken, getErrorMessage } from './api.js';
 
 export const authService = {
   // Fazer login
@@ -19,6 +19,22 @@ export const authService = {
       
       throw new Error(response.message || 'Erro no login');
     } catch (error) {
+      console.error('Erro no serviço de login:', error);
+      // Tratar erros específicos de segurança
+      if (error.response && error.response.status === 423) {
+        const lockedError = new Error('Conta temporariamente bloqueada. Tente novamente mais tarde.');
+        lockedError.response = error.response;
+        throw lockedError;
+      }
+      
+      // Tratar outros erros de resposta
+      if (error.response && error.response.data && error.response.data.message) {
+        // Criar um erro customizado que inclui informações extras
+        const customError = new Error(error.response.data.message);
+        customError.response = error.response;
+        throw customError;
+      }
+      
       throw error;
     }
   },
@@ -84,6 +100,23 @@ export const authService = {
       const response = await api.post('/auth/change-password', passwords);
       return response;
     } catch (error) {
+      // Tratar erros específicos de política de senhas
+      if (error.response && error.response.data && error.response.data.errors) {
+        const policyErrors = error.response.data.errors;
+        throw new Error(`Erro na política de senhas: ${policyErrors.join(', ')}`);
+      }
+      
+      // Tratar erro de reutilização de senha
+      if (error.response && error.response.data && error.response.data.message && 
+          error.response.data.message.includes('reutilizar')) {
+        throw new Error('Não é permitido reutilizar as últimas 5 senhas');
+      }
+      
+      // Tratar outros erros de resposta
+      if (error.response && error.response.data && error.response.data.message) {
+        throw new Error(error.response.data.message);
+      }
+      
       throw error;
     }
   },
@@ -118,6 +151,11 @@ export const authService = {
       
       throw new Error(response.message || 'Erro ao atualizar perfil');
     } catch (error) {
+      // Tratar erros de resposta
+      if (error.response && error.response.data && error.response.data.message) {
+        throw new Error(error.response.data.message);
+      }
+      
       throw error;
     }
   },
@@ -132,17 +170,14 @@ export const authService = {
       try {
         // Validar token com a API
         const user = await this.validateToken();
-        console.error('authService: initializeAuth - usuário validado:', user);
         return user;
       } catch (error) {
         // Se token inválido, fazer logout
-        console.error('authService: initializeAuth - erro na validação:', error);
         this.logout();
         return null;
       }
     }
     
-    console.error('authService: initializeAuth - nenhum token encontrado');
     return null;
   }
 };

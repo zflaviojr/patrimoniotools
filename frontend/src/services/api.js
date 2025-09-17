@@ -1,9 +1,7 @@
 import axios from 'axios';
 
 // Configuração base da API
-console.error('Import.meta.env:', import.meta.env);
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-console.error('API: Base URL configurada:', API_BASE_URL);
 
 // Criar instância do axios
 const apiClient = axios.create({
@@ -17,21 +15,13 @@ const apiClient = axios.create({
 // Interceptor para adicionar token nas requisições
 apiClient.interceptors.request.use(
   (config) => {
-    console.error('API: Interceptor de request chamado com config:', config);
     const token = localStorage.getItem('token');
-    console.error('API: Token encontrado no localStorage:', token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.error('API: Config final:', config);
     return config;
   },
   (error) => {
-    console.error('API: Erro no interceptor de request:', error);
-    console.error('API: Detalhes do erro no interceptor de request:', {
-      message: error.message,
-      stack: error.stack
-    });
     return Promise.reject(error);
   }
 );
@@ -39,20 +29,9 @@ apiClient.interceptors.request.use(
 // Interceptor para tratar respostas e erros
 apiClient.interceptors.response.use(
   (response) => {
-    console.error('API: Interceptor de response chamado com response completo:', response);
-    console.error('API: Interceptor de response - response.data:', JSON.stringify(response.data, null, 2));
-    console.error('API: Interceptor de response - response.status:', response.status);
-    console.error('API: Interceptor de response - response.statusText:', response.statusText);
-    console.error('API: Interceptor de response - response.headers:', response.headers);
     return response;
   },
   (error) => {
-    console.error('API: Erro no interceptor de response:', error);
-    console.error('API: Detalhes do erro no interceptor:', {
-      response: error.response,
-      message: error.message,
-      stack: error.stack
-    });
     // Se token expirou ou é inválido, fazer logout
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
@@ -88,83 +67,50 @@ export const getErrorMessage = (error) => {
 export const api = {
   // GET request
   get: async (url, config = {}) => {
-    console.error('API: GET chamado com:', { url, config });
     try {
       const response = await apiClient.get(url, config);
-      console.error('API: GET response:', JSON.stringify(response, null, 2));
       return response.data;
     } catch (error) {
-      console.error('API: Erro no GET:', error);
       throw error;
     }
   },
 
   // POST request
   post: async (url, data = {}, config = {}) => {
-    console.error('API: POST chamado com:', { url, data, config });
     try {
       const response = await apiClient.post(url, data, config);
-      console.error('API: POST response:', JSON.stringify(response, null, 2));
       return response.data;
     } catch (error) {
-      console.error('API: Erro no POST:', error);
       throw error;
     }
   },
 
   // PUT request
   put: async (url, data = {}, config = {}) => {
-    console.error('API: PUT chamado com:', { url, data, config });
     try {
       const response = await apiClient.put(url, data, config);
-      console.error('API: PUT response completo:', response);
-      console.error('API: PUT response.data:', JSON.stringify(response.data, null, 2));
-      console.error('API: PUT response.status:', response.status);
-      console.error('API: PUT response.statusText:', response.statusText);
-      console.error('API: PUT response.headers:', response.headers);
       return response.data;
     } catch (error) {
-      console.error('API: Erro no PUT:', error);
-      console.error('API: Detalhes do erro PUT:', {
-        response: error.response,
-        message: error.message,
-        stack: error.stack
-      });
       throw error;
     }
   },
 
   // DELETE request
   delete: async (url, config = {}) => {
-    console.error('API: DELETE chamado com:', { url, config });
     try {
       const response = await apiClient.delete(url, config);
-      console.error('API: DELETE response completo:', response);
-      console.error('API: DELETE response.data:', JSON.stringify(response.data, null, 2));
-      console.error('API: DELETE response.status:', response.status);
-      console.error('API: DELETE response.statusText:', response.statusText);
-      console.error('API: DELETE response.headers:', response.headers);
       return response.data;
     } catch (error) {
-      console.error('API: Erro no DELETE:', error);
-      console.error('API: Detalhes do erro DELETE:', {
-        response: error.response,
-        message: error.message,
-        stack: error.stack
-      });
       throw error;
     }
   },
 
   // PATCH request
   patch: async (url, data = {}, config = {}) => {
-    console.error('API: PATCH chamado com:', { url, data, config });
     try {
       const response = await apiClient.patch(url, data, config);
-      console.error('API: PATCH response:', JSON.stringify(response, null, 2));
       return response.data;
     } catch (error) {
-      console.error('API: Erro no PATCH:', error);
       throw error;
     }
   }
@@ -172,7 +118,6 @@ export const api = {
 
 // Função para configurar o token manualmente
 export const setAuthToken = (token) => {
-  console.error('API: setAuthToken chamado com token:', token);
   if (token) {
     apiClient.defaults.headers.Authorization = `Bearer ${token}`;
     localStorage.setItem('token', token);

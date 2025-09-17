@@ -1,33 +1,35 @@
 import React, { useState } from 'react';
-import { Modal } from '../common';
-import { Button } from '../common';
-import { useToast } from '../../context/ToastContext';
-import { authService } from '../../services/authService';
+import Modal from '../common/Modal.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { authService } from '../../services/authService.js';
+import PasswordPolicyIndicator from '../auth/PasswordPolicyIndicator.jsx';
 
 // Componente personalizado para input de senha com ícone de visualização
 const PasswordInput = ({ 
   label, 
+  id,
+  name,
   value, 
   onChange, 
   error, 
-  disabled, 
-  placeholder, 
-  required 
+  disabled,
+  required
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
         {label}
       </label>
-      <div className="relative">
+      <div className="relative mt-1">
         <input
           type={showPassword ? "text" : "password"}
+          id={id}
+          name={name}
           value={value}
           onChange={onChange}
           disabled={disabled}
-          placeholder={placeholder}
           required={required}
           className={`
             w-full px-3 py-2 border rounded-md shadow-sm
@@ -68,167 +70,202 @@ const PasswordInput = ({
   );
 };
 
-const ChangePasswordModal = ({ isOpen, onClose, onSuccess }) => {
-  const { showToast } = useToast();
-  const [loading, setLoading] = useState(false);
+const ChangePasswordModal = ({ isOpen, onClose }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    currentPassword: '',
+    oldPassword: '',
     newPassword: '',
     confirmNewPassword: ''
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // success or error
 
-  const handleInputChange = (field, value) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [name]: value
     }));
-
-    // Limpar erro do campo quando o usuário começar a digitar
-    if (errors[field]) {
+    
+    // Limpar erros específicos do campo
+    if (errors[name]) {
       setErrors(prev => ({
         ...prev,
-        [field]: ''
+        [name]: ''
       }));
+    }
+    
+    // Limpar mensagens gerais
+    if (message) {
+      setMessage('');
+      setMessageType('');
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    // Validar senha atual
-    if (!formData.currentPassword) {
-      newErrors.currentPassword = 'Senha atual é obrigatória';
+    
+    if (!formData.oldPassword) {
+      newErrors.oldPassword = 'Senha atual é obrigatória';
     }
-
-    // Validar nova senha
+    
     if (!formData.newPassword) {
       newErrors.newPassword = 'Nova senha é obrigatória';
-    } else if (formData.newPassword.length < 6) {
-      newErrors.newPassword = 'Nova senha deve ter pelo menos 6 caracteres';
     }
-
-    // Validar confirmação de senha
+    
     if (!formData.confirmNewPassword) {
       newErrors.confirmNewPassword = 'Confirmação de senha é obrigatória';
-    } else if (formData.newPassword !== formData.confirmNewPassword) {
+    }
+    
+    if (formData.newPassword && formData.confirmNewPassword && 
+        formData.newPassword !== formData.confirmNewPassword) {
       newErrors.confirmNewPassword = 'As senhas não coincidem';
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    
+    return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
       return;
     }
-
-    setLoading(true);
+    
+    setIsSubmitting(true);
+    setMessage('');
+    setMessageType('');
+    
     try {
-      // Corrigir os nomes dos campos para corresponder ao backend
-      const response = await authService.changePassword({
-        oldPassword: formData.currentPassword,
+      await authService.changePassword({
+        oldPassword: formData.oldPassword,
         newPassword: formData.newPassword
       });
-
-      if (response.success) {
-        showToast(response.message || 'Senha alterada com sucesso!', 'success');
-        // Limpar formulário
-        setFormData({
-          currentPassword: '',
-          newPassword: '',
-          confirmNewPassword: ''
-        });
-        setErrors({});
-        // Fechar modal e chamar callback de sucesso
-        if (onSuccess) onSuccess();
+      
+      setMessage('Senha alterada com sucesso!');
+      setMessageType('success');
+      
+      // Limpar formulário
+      setFormData({
+        oldPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      });
+      
+      // Fechar modal após 2 segundos
+      setTimeout(() => {
         onClose();
-      } else {
-        showToast(response.message || 'Erro ao alterar senha', 'error');
-      }
+      }, 2000);
     } catch (error) {
-      console.error('Erro ao alterar senha:', error);
-      showToast(
-        error.response?.data?.message || 
-        error.message || 
-        'Erro ao alterar senha. Verifique sua senha atual e tente novamente.',
-        'error'
-      );
+      setMessage(error.message || 'Erro ao alterar senha');
+      setMessageType('error');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleClose = () => {
-    // Limpar formulário ao fechar
+  const closeModal = () => {
+    // Limpar estado ao fechar
     setFormData({
-      currentPassword: '',
+      oldPassword: '',
       newPassword: '',
       confirmNewPassword: ''
     });
     setErrors({});
+    setMessage('');
+    setMessageType('');
     onClose();
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Alterar Senha"
-      size="small"
-    >
+    <Modal isOpen={isOpen} onClose={closeModal} title="Alterar Senha">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-4">
-          <PasswordInput
-            label="Senha Atual"
-            value={formData.currentPassword}
-            onChange={(e) => handleInputChange('currentPassword', e.target.value)}
-            error={errors.currentPassword}
-            disabled={loading}
-            placeholder="Digite sua senha atual"
-            required
-          />
-
-          <PasswordInput
-            label="Nova Senha"
-            value={formData.newPassword}
-            onChange={(e) => handleInputChange('newPassword', e.target.value)}
-            error={errors.newPassword}
-            disabled={loading}
-            placeholder="Digite sua nova senha"
-            required
-          />
-
-          <PasswordInput
-            label="Confirmar Nova Senha"
-            value={formData.confirmNewPassword}
-            onChange={(e) => handleInputChange('confirmNewPassword', e.target.value)}
-            error={errors.confirmNewPassword}
-            disabled={loading}
-            placeholder="Confirme sua nova senha"
-            required
-          />
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button
+        <PasswordInput
+          label="Senha Atual"
+          id="oldPassword"
+          name="oldPassword"
+          value={formData.oldPassword}
+          onChange={handleChange}
+          error={errors.oldPassword}
+          disabled={isSubmitting}
+          required
+        />
+        
+        <PasswordInput
+          label="Nova Senha"
+          id="newPassword"
+          name="newPassword"
+          value={formData.newPassword}
+          onChange={handleChange}
+          error={errors.newPassword}
+          disabled={isSubmitting}
+          required
+        />
+        
+        {/* Indicador de política de senhas */}
+        <PasswordPolicyIndicator password={formData.newPassword} />
+        
+        <PasswordInput
+          label="Confirmar Nova Senha"
+          id="confirmNewPassword"
+          name="confirmNewPassword"
+          value={formData.confirmNewPassword}
+          onChange={handleChange}
+          error={errors.confirmNewPassword}
+          disabled={isSubmitting}
+          required
+        />
+        
+        {message && (
+          <div className={`rounded-md p-4 ${messageType === 'success' ? 'bg-green-50' : 'bg-red-50'}`}>
+            <div className="flex">
+              <div className="flex-shrink-0">
+                {messageType === 'success' ? (
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <div className="ml-3">
+                <p className={`text-sm ${messageType === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+                  {message}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex justify-end space-x-3 mt-6">
+          <button
             type="button"
-            variant="secondary"
-            onClick={handleClose}
-            disabled={loading}
+            onClick={closeModal}
+            className="btn-secondary"
+            disabled={isSubmitting}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
             type="submit"
-            loading={loading}
-            disabled={loading}
+            className="btn-primary"
+            disabled={isSubmitting}
           >
-            Alterar Senha
-          </Button>
+            {isSubmitting ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Alterando...
+              </div>
+            ) : (
+              'Alterar Senha'
+            )}
+          </button>
         </div>
       </form>
     </Modal>

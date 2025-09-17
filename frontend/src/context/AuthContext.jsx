@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { authService } from '../services/authService.js';
 
 // Estado inicial
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Função de login
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     
     try {
@@ -132,6 +132,7 @@ export const AuthProvider = ({ children }) => {
       
       return data;
     } catch (error) {
+      console.error('Erro de login capturado no contexto:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Erro desconhecido';
       
       dispatch({ 
@@ -139,12 +140,13 @@ export const AuthProvider = ({ children }) => {
         payload: { error: errorMessage } 
       });
       
+      // Re-throw o erro para que o componente chamador possa acessar as informações extras
       throw error;
     }
-  };
+  }, []);
 
   // Função de logout
-  const logout = async () => {
+  const logout = useCallback(async () => {
     dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: true } });
     
     try {
@@ -154,10 +156,10 @@ export const AuthProvider = ({ children }) => {
     } finally {
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
     }
-  };
+  }, []);
 
   // Atualizar dados do usuário
-  const updateUser = async (newUserData = null) => {
+  const updateUser = useCallback(async (newUserData = null) => {
     try {
       if (newUserData) {
         // Se dados foram fornecidos, apenas atualizar o contexto
@@ -179,21 +181,21 @@ export const AuthProvider = ({ children }) => {
       console.error('Erro ao atualizar dados do usuário:', error);
       throw error;
     }
-  };
+  }, []);
 
   // Alterar senha
-  const changePassword = async (passwords) => {
+  const changePassword = useCallback(async (passwords) => {
     try {
       return await authService.changePassword(passwords);
     } catch (error) {
       throw error;
     }
-  };
+  }, []);
 
   // Limpar erro
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-  };
+  }, []);
 
   // Valor do contexto
   const value = {

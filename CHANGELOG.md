@@ -1,5 +1,59 @@
 # Changelog
 
+## [1.2.0] - 2025-09-11
+
+### Adicionado
+
+- Implementação completa da política de segurança de senhas e proteção contra acessos não autorizados
+- Banco de dados:
+  - Novas tabelas de segurança:
+    - `password_history` para armazenar histórico de senhas
+    - `login_attempts` para rastrear tentativas de login
+    - `audit_logs` para registrar eventos de auditoria
+  - Campos adicionais na tabela `users`:
+    - `password_last_changed` para rastrear quando a senha foi alterada
+    - `password_expires_at` para definir data de expiração da senha
+- Backend:
+  - Modelos:
+    - [PasswordHistory.js](backend/src/models/PasswordHistory.js) para gerenciar histórico de senhas
+    - [LoginAttempt.js](backend/src/models/LoginAttempt.js) para controlar tentativas de login
+    - [AuditLog.js](backend/src/models/AuditLog.js) para registrar eventos de auditoria
+  - Serviços:
+    - [passwordPolicyService.js](backend/src/services/passwordPolicyService.js) com lógica de política de senhas
+    - [loginAttemptService.js](backend/src/services/loginAttemptService.js) para controle de tentativas
+    - [auditService.js](backend/src/services/auditService.js) para registro de auditoria
+  - Middlewares:
+    - [security.js](backend/src/middleware/security.js) com middlewares de segurança
+    - Validação de política de senhas, reutilização e tentativas de login
+  - Atualização do modelo [User.js](backend/src/models/User.js) para incluir campos de segurança
+  - Atualização do serviço [authService.js](backend/src/services/authService.js) para integrar políticas de segurança
+  - Atualização do controlador [authController.js](backend/src/controllers/authController.js) para validar senhas
+  - Atualização das rotas [auth.js](backend/src/routes/auth.js) para incluir middlewares de segurança
+  - Atualização do middleware [errorHandler.js](backend/src/middleware/errorHandler.js) para novos tipos de erro
+- Frontend:
+  - Componentes:
+    - [PasswordPolicyIndicator.jsx](frontend/src/components/auth/PasswordPolicyIndicator.jsx) para exibir requisitos de senha
+    - [LoginAttemptCounter.jsx](frontend/src/components/auth/LoginAttemptCounter.jsx) para mostrar tentativas restantes
+  - Atualização do formulário [LoginForm.jsx](frontend/src/components/auth/LoginForm.jsx) para integrar componentes de segurança
+  - Atualização do modal [ChangePasswordModal.jsx](frontend/src/components/users/ChangePasswordModal.jsx) para validar política de senhas
+  - Atualização do serviço [authService.js](frontend/src/services/authService.js) para tratar erros de segurança
+- Scripts:
+  - [security-setup.sql](backend/security-setup.sql) para criar/atualizar tabelas de segurança
+  - [init-security-tables.js](backend/src/config/init-security-tables.js) para inicializar tabelas de segurança
+  - [test-security.js](backend/test-security.js) para testar funcionalidades de segurança
+- Funcionalidades de segurança:
+  - Política de senhas fortes (mínimo 8 caracteres, maiúscula, minúscula, número, caractere especial)
+  - Prevenção de reutilização das últimas 5 senhas
+  - Expiração de senhas a cada 90 dias
+  - Bloqueio temporário após 5 tentativas falhas de login
+  - Registro completo de tentativas de login, acessos e ações sensíveis
+  - Auditoria de eventos de segurança
+
+### Modificado
+
+- Atualização do script de inicialização do banco de dados [init-db.js](backend/src/config/init-db.js) para incluir tabelas de segurança
+- Atualização do utilitário de validações para incluir validações de política de senhas
+
 ## [1.1.0] - 2025-09-05
 
 ### Adicionado
@@ -36,12 +90,48 @@
 - Atualização do arquivo principal do backend [index.js](backend/src/index.js) para incluir as novas rotas
 - Atualização do utilitário de validações [validation.js](backend/src/utils/validation.js) para incluir validações específicas da entidade Descrição
 
-## [1.0.0] - 2025-09-01
+## [1.0.0] - 2025-09-12
 
-### Adicionado
+### Added
+- Sistema de autenticação com JWT
+- CRUD de responsáveis
+- CRUD de descrições
+- CRUD de usuários (apenas admin)
+- Sistema de auditoria
+- Política de senhas
+- Proteção contra tentativas de login falhas
+- Bloqueio temporário de contas após múltiplas tentativas falhas
 
-- Versão inicial do sistema com CRUD completo para a entidade "Responsável"
-- Autenticação JWT e controle de acesso
-- Interface administrativa responsiva com React
-- Backend em Node.js com Express
-- Banco de dados PostgreSQL
+### Changed
+- Melhorias na interface do usuário
+- Atualização das dependências
+- Aprimoramento da segurança
+- Correção de erros de exibição de mensagens na tela de login
+
+### Removed
+- Componente LoginAttemptCounter.jsx que exibia tentativas restantes de forma incorreta
+
+## [0.2.0] - 2025-09-10
+
+### Added
+- Funcionalidade de mudança de senha
+- Validação de política de senhas
+- Histórico de senhas para evitar reutilização
+- Expiração de senhas (90 dias)
+- Sistema de tentativas de login
+- Bloqueio temporário de contas
+
+### Changed
+- Aprimoramento da segurança do sistema
+- Melhorias na interface do usuário
+- Otimização do código
+
+## [0.1.0] - 2025-09-08
+
+### Added
+- Projeto inicial
+- Estrutura básica do frontend (React + Vite)
+- Estrutura básica do backend (Node.js + Express)
+- Conexão com PostgreSQL
+- CRUD básico de responsáveis
+- Sistema de autenticação básico

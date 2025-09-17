@@ -1,13 +1,14 @@
 import express from 'express';
 import AuthController from '../controllers/authController.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { loginAttemptMiddleware, passwordPolicyMiddleware, passwordReuseMiddleware } from '../middleware/security.js';
 
 const router = express.Router();
 
 // Rotas públicas (não precisam de autenticação)
 
 // POST /api/auth/login - Fazer login
-router.post('/login', AuthController.loginValidation, AuthController.login);
+router.post('/login', loginAttemptMiddleware, AuthController.loginValidation, AuthController.login);
 
 // POST /api/auth/register - Registrar novo usuário (opcional, se quiser permitir novos registros)
 // router.post('/register', AuthController.registerValidation, AuthController.register);
@@ -24,7 +25,12 @@ router.post('/logout', authenticateToken, AuthController.logout);
 router.get('/me', authenticateToken, AuthController.getCurrentUser);
 
 // POST /api/auth/change-password - Alterar senha
-router.post('/change-password', authenticateToken, AuthController.changePassword);
+router.post('/change-password', 
+  authenticateToken, 
+  passwordPolicyMiddleware, 
+  passwordReuseMiddleware, 
+  AuthController.changePassword
+);
 
 // PUT /api/auth/profile - Atualizar perfil do usuário atual
 router.put('/profile', authenticateToken, AuthController.updateProfileValidation, AuthController.updateProfile);

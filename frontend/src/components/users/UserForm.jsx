@@ -117,13 +117,17 @@ const UserForm = ({ onSubmit, user, loading, onCancel }) => {
       newErrors.username = 'Username deve conter apenas letras, números, underscore, ponto e hífen';
     }
 
-    // Validação do email (opcional, mas se preenchido deve ser válido)
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    // Validação do email 
+    if (!formData.email.trim()) {
+      newErrors.email = 'E-mail é obrigatório';
+    } else if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Email deve ter formato válido';
     }
 
-    // Validação do telefone (opcional, mas se preenchido deve ser válido)
-    if (formData.telefone && !/^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(formData.telefone)) {
+    // Validação do telefone 
+    if (!formData.telefone.trim()) {
+      newErrors.telefone = 'Telefone é obrigatório';
+    } else if (formData.telefone && !/^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(formData.telefone)) {
       newErrors.telefone = 'Telefone deve estar no formato (XX) XXXXX-XXXX ou (XX) XXXX-XXXX';
     }
 
@@ -205,7 +209,8 @@ const UserForm = ({ onSubmit, user, loading, onCancel }) => {
           onChange={(e) => handleInputChange('email', e.target.value)}
           error={errors.email}
           disabled={loading}
-          placeholder="Digite o email (opcional)"
+          placeholder="Digite o email"
+          required
         />
 
         <PhoneInput
@@ -214,7 +219,8 @@ const UserForm = ({ onSubmit, user, loading, onCancel }) => {
           onChange={(value) => handleInputChange('telefone', value)}
           error={errors.telefone}
           disabled={loading}
-          placeholder="Digite o telefone (opcional)"
+          placeholder="Digite o telefone"
+          required
         />
 
         <PasswordInput

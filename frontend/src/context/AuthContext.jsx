@@ -7,6 +7,7 @@ const initialState = {
   isAuthenticated: false,
   loading: true,
   error: null,
+  remainingAttempts: null, // Adicionar remainingAttempts ao estado inicial
 };
 
 // Tipos de ações
@@ -18,6 +19,7 @@ const AUTH_ACTIONS = {
   SET_USER: 'SET_USER',
   SET_LOADING: 'SET_LOADING',
   CLEAR_ERROR: 'CLEAR_ERROR',
+  SET_REMAINING_ATTEMPTS: 'SET_REMAINING_ATTEMPTS', // Nova ação para definir remainingAttempts
 };
 
 // Reducer
@@ -37,6 +39,7 @@ const authReducer = (state, action) => {
         isAuthenticated: true,
         loading: false,
         error: null,
+        remainingAttempts: null, // Resetar remainingAttempts após login bem-sucedido
       };
     
     case AUTH_ACTIONS.LOGIN_FAILURE:
@@ -46,6 +49,7 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
         loading: false,
         error: action.payload.error,
+        remainingAttempts: action.payload.remainingAttempts || null, // Definir remainingAttempts no erro
       };
     
     case AUTH_ACTIONS.LOGOUT:
@@ -55,6 +59,7 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
         loading: false,
         error: null,
+        remainingAttempts: null, // Resetar remainingAttempts no logout
       };
     
     case AUTH_ACTIONS.SET_USER:
@@ -76,6 +81,12 @@ const authReducer = (state, action) => {
       return {
         ...state,
         error: null,
+      };
+    
+    case AUTH_ACTIONS.SET_REMAINING_ATTEMPTS:
+      return {
+        ...state,
+        remainingAttempts: action.payload.remainingAttempts,
       };
     
     default:
@@ -121,25 +132,36 @@ export const AuthProvider = ({ children }) => {
   // Função de login
   const login = useCallback(async (credentials) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
-    
+  
     try {
       const data = await authService.login(credentials);
-      
+    
       dispatch({ 
         type: AUTH_ACTIONS.LOGIN_SUCCESS, 
         payload: { user: data.user } 
       });
-      
+    
       return data;
     } catch (error) {
       console.error('Erro de login capturado no contexto:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Erro desconhecido';
-      
+    
+      // Extrair remainingAttempts do erro
+      let remainingAttempts = null;
+      if (error.remainingAttempts !== undefined) {
+        remainingAttempts = error.remainingAttempts;
+      } else if (error.response && error.response.data && error.response.data.remainingAttempts !== undefined) {
+        remainingAttempts = error.response.data.remainingAttempts;
+      }
+    
       dispatch({ 
         type: AUTH_ACTIONS.LOGIN_FAILURE, 
-        payload: { error: errorMessage } 
+        payload: { 
+          error: errorMessage,
+          remainingAttempts
+        } 
       });
-      
+    
       // Re-throw o erro para que o componente chamador possa acessar as informações extras
       throw error;
     }
@@ -197,6 +219,14 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
   }, []);
 
+  // Função para definir remainingAttempts
+  const setRemainingAttempts = useCallback((remainingAttempts) => {
+    dispatch({ 
+      type: AUTH_ACTIONS.SET_REMAINING_ATTEMPTS, 
+      payload: { remainingAttempts } 
+    });
+  }, []);
+
   // Valor do contexto
   const value = {
     ...state,
@@ -205,6 +235,7 @@ export const AuthProvider = ({ children }) => {
     updateUser,
     changePassword,
     clearError,
+    setRemainingAttempts, // Adicionar setRemainingAttempts ao valor do contexto
   };
 
   return (

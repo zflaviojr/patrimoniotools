@@ -45,15 +45,8 @@ const LoginForm = () => {
       }));
     }
     
-    // Limpar erro global quando o usuário começar a digitar
-    if (error) {
-      clearError();
-    }
-    
-    // Limpar tentativas restantes quando o usuário digitar
-    if (remainingAttempts !== null) {
-      setRemainingAttempts(null);
-    }
+    // Não limpar erro global aqui para preservar remainingAttempts
+    // O erro será limpo apenas quando o formulário for submetido com sucesso
   };
 
   // Lidar com submit do formulário
@@ -174,9 +167,6 @@ const LoginForm = () => {
           </div>
 
           {/* Contador de tentativas de login - só mostrar quando houver erro e tentativas restantes */}
-          {
-            console.log('error', error, 'remainingAttempts', remainingAttempts)
-          }
           {error && remainingAttempts !== null && remainingAttempts > 0 && (
             <LoginAttemptCounter remainingAttempts={remainingAttempts} />
           )}

@@ -32,6 +32,12 @@ export const authService = {
         // Criar um erro customizado que inclui informações extras
         const customError = new Error(error.response.data.message);
         customError.response = error.response;
+        
+        // Adicionar informações de tentativas restantes se disponíveis
+        if (error.response.data.remainingAttempts !== undefined) {
+          customError.remainingAttempts = error.response.data.remainingAttempts;
+        }
+        
         throw customError;
       }
       

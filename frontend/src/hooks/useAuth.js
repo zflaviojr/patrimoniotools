@@ -60,7 +60,9 @@ export const useGuestRoute = () => {
 export const useLogin = () => {
   const auth = useAuth();
   const navigate = useNavigate();
-  const [remainingAttempts, setRemainingAttempts] = useState(null);
+  
+  // Usar remainingAttempts do contexto em vez de manter estado local
+  const { remainingAttempts, setRemainingAttempts } = auth;
 
   const handleLogin = useCallback(async (credentials, options = {}) => {
     try {
@@ -70,36 +72,24 @@ export const useLogin = () => {
       const redirectTo = options.redirectTo || '/dashboard';
       navigate(redirectTo);
       
-      // Resetar tentativas restantes após login bem-sucedido
-      setRemainingAttempts(null);
-      
+      // O remainingAttempts já é resetado no contexto após login bem-sucedido
       return true;
     } catch (error) {
       console.error('Erro no login (hook useLogin):', error);
       
-      // Verificar se o erro contém informações sobre tentativas restantes
-      if (error.response && error.response.data && error.response.data.remainingAttempts !== undefined) {
-        setRemainingAttempts(error.response.data.remainingAttempts);
-      } else {
-        // Se não houver informações de tentativas, resetar
-        setRemainingAttempts(null);
-      }
+      // O remainingAttempts já é definido no contexto quando ocorre um erro
+      // Não precisamos fazer nada aqui, pois já está sendo tratado no contexto
       
       // Não estamos ocultando o erro aqui, ele será tratado pelo contexto
       throw error;
     }
   }, [auth, navigate]);
 
-  // Função para limpar as tentativas restantes
-  const clearRemainingAttempts = useCallback(() => {
-    setRemainingAttempts(null);
-  }, []);
-
   return {
     ...auth,
     handleLogin,
     remainingAttempts,
-    setRemainingAttempts: clearRemainingAttempts,
+    setRemainingAttempts,
   };
 };
 

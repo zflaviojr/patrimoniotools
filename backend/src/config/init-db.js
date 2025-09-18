@@ -118,7 +118,7 @@ export const createTables = async () => {
     console.log('Inserindo usuário admin padrão...');
     await query(`
       INSERT INTO users (username, password, email, telefone) VALUES 
-      ('admin', '$2b$10$rOJl9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Qu', 'admin@sistema.com', '(83) 2101-1000')
+      ('admin', '$2b$10$Ep7SvSNUO05VS2g7BgFIzeBusJAzK2EZszTEbpzG.Qv15M7j5116u', 'admin@sistema.com', '(83) 2101-1000')
       ON CONFLICT (username) DO NOTHING
     `);
     

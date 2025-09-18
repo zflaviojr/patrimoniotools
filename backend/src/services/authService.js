@@ -53,7 +53,7 @@ class AuthService {
         const remainingAttempts = await LoginAttemptService.getRemainingAttempts(username, ipAddress);
         
         // Se for a última tentativa, bloquear a conta
-        if (remainingAttempts <= 1) {
+        if (remainingAttempts <= 0) {
           await LoginAttemptService.lockAccount(username, ipAddress);
           await AuditService.logEvent(user.id, 'ACCOUNT_LOCKED', `Conta bloqueada após múltiplas tentativas falhas: ${username}`, ipAddress);
           

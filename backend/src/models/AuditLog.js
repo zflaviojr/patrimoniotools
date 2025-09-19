@@ -14,7 +14,7 @@ class AuditLog {
   static async logEvent(userId, action, details = null, ipAddress = null) {
     try {
       const result = await query(
-        `INSERT INTO audit_logs (user_id, action, details, ip_address, created_at) 
+        `INSERT INTO tools.audit_logs (user_id, action, details, ip_address, created_at) 
          VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP) 
          RETURNING *`,
         [userId, action, details, ipAddress]
@@ -31,7 +31,7 @@ class AuditLog {
   static async getLogs(filters = {}, page = 1, limit = 20) {
     try {
       const offset = (page - 1) * limit;
-      let queryText = 'SELECT * FROM audit_logs ';
+      let queryText = 'SELECT * FROM tools.audit_logs ';
       let whereClause = [];
       let params = [];
       
@@ -81,7 +81,7 @@ class AuditLog {
   static async cleanupOldLogs(daysToKeep = 180) {
     try {
       const result = await query(
-        `DELETE FROM audit_logs 
+        `DELETE FROM tools.audit_logs 
          WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '${daysToKeep} days'`
       );
       

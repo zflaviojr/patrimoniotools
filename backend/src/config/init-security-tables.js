@@ -6,17 +6,17 @@ const createSecurityTables = async () => {
     // Adicionar colunas à tabela de usuários
     console.log('Atualizando tabela de usuários...');
     await query(`
-      ALTER TABLE users 
+      ALTER TABLE tools.users 
       ADD COLUMN IF NOT EXISTS password_last_changed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       ADD COLUMN IF NOT EXISTS password_expires_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP + INTERVAL '90 days'
     `);
     
-    // Criar tabela de histórico de senhas
+    // Criar tabela de histórico de senhas no schema tools
     console.log('Criando tabela de histórico de senhas...');
     await query(`
-      CREATE TABLE IF NOT EXISTS password_history (
+      CREATE TABLE IF NOT EXISTS tools.password_history (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES tools.users(id) ON DELETE CASCADE,
         password_hash VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -25,13 +25,13 @@ const createSecurityTables = async () => {
     // Criar índice para melhorar performance
     await query(`
       CREATE INDEX IF NOT EXISTS idx_password_history_user_id 
-      ON password_history(user_id)
+      ON tools.password_history(user_id)
     `);
     
-    // Criar tabela de tentativas de login
+    // Criar tabela de tentativas de login no schema tools
     console.log('Criando tabela de tentativas de login...');
     await query(`
-      CREATE TABLE IF NOT EXISTS login_attempts (
+      CREATE TABLE IF NOT EXISTS tools.login_attempts (
         id SERIAL PRIMARY KEY,
         username VARCHAR(255) NOT NULL,
         ip_address VARCHAR(45),
@@ -44,26 +44,26 @@ const createSecurityTables = async () => {
     // Criar índices para melhorar performance
     await query(`
       CREATE INDEX IF NOT EXISTS idx_login_attempts_username 
-      ON login_attempts(username)
+      ON tools.login_attempts(username)
     `);
     
     await query(`
       CREATE INDEX IF NOT EXISTS idx_login_attempts_ip 
-      ON login_attempts(ip_address)
+      ON tools.login_attempts(ip_address)
     `);
     
     await query(`
       CREATE INDEX IF NOT EXISTS idx_login_attempts_locked_until 
-      ON login_attempts(locked_until) 
+      ON tools.login_attempts(locked_until) 
       WHERE locked_until IS NOT NULL
     `);
     
-    // Criar tabela de logs de auditoria
+    // Criar tabela de logs de auditoria no schema tools
     console.log('Criando tabela de logs de auditoria...');
     await query(`
-      CREATE TABLE IF NOT EXISTS audit_logs (
+      CREATE TABLE IF NOT EXISTS tools.audit_logs (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        user_id INTEGER REFERENCES tools.users(id) ON DELETE SET NULL,
         action VARCHAR(100) NOT NULL,
         details TEXT,
         ip_address VARCHAR(45),
@@ -74,17 +74,17 @@ const createSecurityTables = async () => {
     // Criar índices para melhorar performance
     await query(`
       CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id 
-      ON audit_logs(user_id)
+      ON tools.audit_logs(user_id)
     `);
     
     await query(`
       CREATE INDEX IF NOT EXISTS idx_audit_logs_action 
-      ON audit_logs(action)
+      ON tools.audit_logs(action)
     `);
     
     await query(`
       CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at 
-      ON audit_logs(created_at)
+      ON tools.audit_logs(created_at)
     `);
     
     console.log('Tabelas de segurança criadas/atualizadas com sucesso!');

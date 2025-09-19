@@ -68,8 +68,8 @@ class Descricao {
       const sanitizedDescricao = sanitizeString(descricao);
       
       const result = await query(
-        `INSERT INTO tbldescricao (descricao, subcontasiafi, vidautil, useradd) 
-         VALUES (upper($1), $2, $3, $4) 
+        `INSERT INTO tbldescricao (descricao, subcontasiafi, vidautil, useradd, deletado) 
+         VALUES (upper($1), $2, $3, $4, 0) 
          RETURNING *`,
         [sanitizedDescricao, subcontasiafi || null, vidautil || null, useradd || null]
       );
@@ -180,8 +180,8 @@ class Descricao {
       
       if (search) {
         const searchTerm = `%${search.toLowerCase()}%`;
-        queryText += ' AND (LOWER(descricao) LIKE $1 OR codigo LIKE $1)';
-        countText += ' AND (LOWER(descricao) LIKE $1 OR codigo LIKE $1)';
+        queryText += ' AND (LOWER(descricao) LIKE $1 OR CAST(codigo AS VARCHAR) LIKE $1)';
+        countText += ' AND (LOWER(descricao) LIKE $1 OR CAST(codigo AS VARCHAR) LIKE $1)';
         queryParams.push(searchTerm);
         countParams.push(searchTerm);
       }
@@ -190,6 +190,8 @@ class Descricao {
       queryText += ` ORDER BY ${sortBy} ${sortOrder} LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
       queryParams.push(limit, offset);
       
+      console.log('queryText', queryText);
+      console.log('queryParams', queryParams);
       const [descricoesResult, countResult] = await Promise.all([
         query(queryText, queryParams),
         query(countText, countParams)

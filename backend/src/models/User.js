@@ -19,7 +19,7 @@ class User {
   static async findByUsername(username) {
     try {
       const result = await query(
-        'SELECT * FROM users WHERE username = $1',
+        'SELECT * FROM tools.users WHERE username = $1',
         [username]
       );
       
@@ -34,7 +34,7 @@ class User {
   static async findById(id) {
     try {
       const result = await query(
-        'SELECT * FROM users WHERE id = $1',
+        'SELECT * FROM tools.users WHERE id = $1',
         [id]
       );
       
@@ -58,7 +58,7 @@ class User {
       expiresAt.setDate(expiresAt.getDate() + 90);
       
       const result = await query(
-        `INSERT INTO users (username, password, email, telefone, created_at, updated_at, password_last_changed, password_expires_at) 
+        `INSERT INTO tools.users (username, password, email, telefone, created_at, updated_at, password_last_changed, password_expires_at) 
          VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5) 
          RETURNING *`,
         [username, hashedPassword, email, telefone, expiresAt]
@@ -106,7 +106,7 @@ class User {
       expiresAt.setDate(expiresAt.getDate() + 90);
       
       await query(
-        'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP, password_last_changed = CURRENT_TIMESTAMP, password_expires_at = $2 WHERE id = $3',
+        'UPDATE tools.users SET password = $1, updated_at = CURRENT_TIMESTAMP, password_last_changed = CURRENT_TIMESTAMP, password_expires_at = $2 WHERE id = $3',
         [hashedPassword, expiresAt, this.id]
       );
       
@@ -128,7 +128,7 @@ class User {
   static async findAll() {
     try {
       const result = await query(
-        'SELECT id, username, email, telefone, created_at, updated_at, password_last_changed, password_expires_at FROM users ORDER BY username'
+        'SELECT id, username, email, telefone, created_at, updated_at, password_last_changed, password_expires_at FROM tools.users ORDER BY username'
       );
       
       return result.rows.map(row => new User(row));
@@ -144,9 +144,9 @@ class User {
       const offset = (page - 1) * limit;
       let query_text = `
         SELECT id, username, email, telefone, created_at, updated_at, password_last_changed, password_expires_at
-        FROM users 
+        FROM tools.users 
       `;
-      let countQuery = 'SELECT COUNT(*) FROM users ';
+      let countQuery = 'SELECT COUNT(*) FROM tools.users ';
       let params = [];
       let countParams = [];
       
@@ -187,7 +187,7 @@ class User {
   static async updateById(id, userData) {
     try {
       const { username, email, telefone, password } = userData;
-      let queryText = 'UPDATE users SET ';
+      let queryText = 'UPDATE tools.users SET ';
       let params = [];
       let updates = [];
       
@@ -245,7 +245,7 @@ class User {
   static async deleteById(id) {
     try {
       const result = await query(
-        'DELETE FROM users WHERE id = $1 RETURNING id',
+        'DELETE FROM tools.users WHERE id = $1 RETURNING id',
         [id]
       );
       
@@ -260,7 +260,7 @@ class User {
   async updateProfile(userData) {
     try {
       const { email, telefone } = userData;
-      let queryText = 'UPDATE users SET ';
+      let queryText = 'UPDATE tools.users SET ';
       let params = [];
       let updates = [];
       

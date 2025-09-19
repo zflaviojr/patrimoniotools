@@ -79,7 +79,7 @@ const startServer = async () => {
     
     // Inicializar tabelas
     console.log('🗄️ Inicializando tabelas do banco...');
-    await createTables();
+    //await createTables();
     
     // Iniciar servidor
     const port = config.port;

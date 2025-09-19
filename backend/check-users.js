@@ -4,21 +4,18 @@ const checkUsers = async () => {
   try {
     console.log('Verificando usuários no banco de dados...');
     
-    const result = await query('SELECT * FROM users');
+    // Listar todos os usuários
+    const result = await query('SELECT * FROM tools.users');
+    console.log(`Encontrados ${result.rows.length} usuários:`);
+    console.log(result.rows);
     
-    console.log('Total de usuários encontrados:', result.rows.length);
-    console.log('Usuários:');
-    result.rows.forEach(user => {
-      console.log('- ID:', user.id, '| Username:', user.username, '| Email:', user.email);
-    });
-    
-    // Verificar se há usuários com username 'admin'
-    const adminResult = await query('SELECT * FROM users WHERE username = $1', ['admin']);
-    console.log('\nUsuário admin:');
+    // Verificar usuário admin específico
+    const adminResult = await query('SELECT * FROM tools.users WHERE username = $1', ['admin']);
     if (adminResult.rows.length > 0) {
-      console.log('- Encontrado:', adminResult.rows[0]);
+      console.log('Usuário admin encontrado:');
+      console.log(adminResult.rows[0]);
     } else {
-      console.log('- Não encontrado');
+      console.log('Usuário admin não encontrado');
     }
   } catch (error) {
     console.error('Erro ao verificar usuários:', error);

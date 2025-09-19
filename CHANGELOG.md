@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.3.0] - 2025-09-18
+
+### Adicionado
+
+- Reorganização do banco de dados com novo schema 'tools'
+- Banco de dados:
+  - Criação do schema 'tools' para organizar tabelas do sistema
+  - Movimentação das tabelas de sistema para o schema 'tools':
+    - `users` - tabela de usuários do sistema
+    - `password_history` - histórico de senhas dos usuários
+    - `login_attempts` - registro de tentativas de login
+    - `audit_logs` - logs de auditoria do sistema
+  - Tabelas mantidas no schema 'public':
+    - `tblresponsavel` - tabela de responsáveis
+    - `tbldescricao` - tabela de descrições
+  - Scripts de migração:
+    - [migration-move-to-tools-schema.sql](backend/migration-move-to-tools-schema.sql) para mover tabelas existentes
+- Backend:
+  - Atualização de todos os modelos para referenciar tabelas no novo schema:
+    - [User.js](backend/src/models/User.js) - acesso à tabela tools.users
+    - [PasswordHistory.js](backend/src/models/PasswordHistory.js) - acesso à tabela tools.password_history
+    - [LoginAttempt.js](backend/src/models/LoginAttempt.js) - acesso à tabela tools.login_attempts
+    - [AuditLog.js](backend/src/models/AuditLog.js) - acesso à tabela tools.audit_logs
+  - Atualização dos scripts de inicialização:
+    - [init-db.js](backend/src/config/init-db.js) - criação de tabelas no schema correto
+    - [init-security-tables.js](backend/src/config/init-security-tables.js) - criação de tabelas de segurança no schema tools
+  - Atualização dos scripts SQL:
+    - [database-setup.sql](backend/database-setup.sql) - criação de tabelas no schema tools
+    - [security-setup.sql](backend/security-setup.sql) - criação de tabelas de segurança no schema tools
+    - [migration-add-telefone.sql](backend/migration-add-telefone.sql) - atualização da tabela tools.users
+- Scripts utilitários:
+  - Atualização de scripts de verificação para acessar tabelas no novo schema:
+    - [check-users.js](backend/check-users.js)
+    - [check-test-user.js](check-test-user.js)
+    - [check_users.js](check_users.js)
+
+### Modificado
+
+- Atualização de todas as referências a tabelas no código para usar o schema 'tools'
+- Reorganização da estrutura do banco de dados para melhorar a manutenção e separação de conceitos
+
 ## [1.2.0] - 2025-09-11
 
 ### Adicionado

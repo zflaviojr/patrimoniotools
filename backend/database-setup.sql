@@ -7,8 +7,11 @@
 -- Conectar ao banco patrimonio
 -- \c patrimonio;
 
--- Criar tabela de usuários
-CREATE TABLE IF NOT EXISTS users (
+-- Criar schema tools
+CREATE SCHEMA IF NOT EXISTS tools;
+
+-- Criar tabela de usuários no schema tools
+CREATE TABLE IF NOT EXISTS tools.users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
@@ -18,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Criar tabela de responsáveis
+-- Criar tabela de responsáveis (mantém no schema public)
 CREATE TABLE IF NOT EXISTS tblresponsavel (
     id SERIAL PRIMARY KEY,
     matricula VARCHAR NOT NULL,
@@ -27,7 +30,7 @@ CREATE TABLE IF NOT EXISTS tblresponsavel (
     CONSTRAINT uk_matricula UNIQUE (matricula)
 );
 
--- Criar tabela de descrições
+-- Criar tabela de descrições (mantém no schema public)
 CREATE TABLE IF NOT EXISTS tbldescricao (
     id SERIAL PRIMARY KEY,
     descricao VARCHAR NOT NULL,
@@ -72,8 +75,8 @@ CREATE TRIGGER trg_fill_descricao_codigo
 
 -- Inserir usuário admin padrão
 -- Senha: admin123 (hash bcrypt)
-INSERT INTO users (username, password, email, telefone) VALUES 
-('admin', '$2b$10$rOJl9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Q9ZQZQ9Z8Qu', 'admin@sistema.com', '(83) 2101-1000')
+INSERT INTO tools.users (username, password, email, telefone) VALUES 
+('admin', '$2b$10$Ep7SvSNUO05VS2g7BgFIzeBusJAzK2EZszTEbpzG.Qv15M7j5116u', 'admin@sistema.com', '(83) 2101-1000')
 ON CONFLICT (username) DO NOTHING;
 
 -- Inserir dados de teste para responsáveis
@@ -98,7 +101,7 @@ INSERT INTO tbldescricao (descricao, subcontasiafi, vidautil, codigo, useradd, d
 ON CONFLICT (codigo) DO NOTHING;
 
 -- Verificar dados inseridos
-SELECT 'Usuários:' as tipo, COUNT(*) as total FROM users
+SELECT 'Usuários:' as tipo, COUNT(*) as total FROM tools.users
 UNION ALL
 SELECT 'Responsáveis:' as tipo, COUNT(*) as total FROM tblresponsavel
 UNION ALL
@@ -106,6 +109,6 @@ SELECT 'Descrições:' as tipo, COUNT(*) as total FROM tbldescricao;
 
 -- Mostrar alguns dados
 SELECT 'Dados de teste inseridos com sucesso!' as status;
-SELECT * FROM users;
+SELECT * FROM tools.users;
 SELECT * FROM tblresponsavel ORDER BY nome;
 SELECT * FROM tbldescricao ORDER BY descricao;

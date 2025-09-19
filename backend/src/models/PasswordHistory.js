@@ -16,7 +16,7 @@ class PasswordHistory {
       const hashedPassword = await bcrypt.hash(password, 10);
       
       const result = await query(
-        `INSERT INTO password_history (user_id, password_hash, created_at) 
+        `INSERT INTO tools.password_history (user_id, password_hash, created_at) 
          VALUES ($1, $2, CURRENT_TIMESTAMP) 
          RETURNING *`,
         [userId, hashedPassword]
@@ -34,7 +34,7 @@ class PasswordHistory {
     try {
       // Obter as últimas senhas do histórico
       const result = await query(
-        `SELECT password_hash FROM password_history 
+        `SELECT password_hash FROM tools.password_history 
          WHERE user_id = $1 
          ORDER BY created_at DESC 
          LIMIT $2`,
@@ -59,9 +59,9 @@ class PasswordHistory {
   static async cleanupHistory(userId, maxHistory = 5) {
     try {
       await query(
-        `DELETE FROM password_history 
+        `DELETE FROM tools.password_history 
          WHERE id IN (
-           SELECT id FROM password_history 
+           SELECT id FROM tools.password_history 
            WHERE user_id = $1 
            ORDER BY created_at DESC 
            OFFSET $2

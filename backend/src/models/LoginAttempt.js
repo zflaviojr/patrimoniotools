@@ -14,7 +14,7 @@ class LoginAttempt {
   static async recordAttempt(username, ip, success) {
     try {
       const result = await query(
-        `INSERT INTO login_attempts (username, ip_address, success, attempted_at) 
+        `INSERT INTO tools.login_attempts (username, ip_address, success, attempted_at) 
          VALUES ($1, $2, $3, CURRENT_TIMESTAMP) 
          RETURNING *`,
         [username, ip, success]
@@ -31,7 +31,7 @@ class LoginAttempt {
   static async isLocked(username, ip) {
     try {
       const result = await query(
-        `SELECT locked_until FROM login_attempts 
+        `SELECT locked_until FROM tools.login_attempts 
          WHERE username = $1 AND ip_address = $2 AND locked_until IS NOT NULL 
          AND locked_until > CURRENT_TIMESTAMP
          ORDER BY attempted_at DESC 
@@ -54,7 +54,7 @@ class LoginAttempt {
         `WITH recent_attempts AS (
            SELECT success, attempted_at,
                   ROW_NUMBER() OVER (ORDER BY attempted_at DESC) as rn
-           FROM login_attempts 
+           FROM tools.login_attempts 
            WHERE username = $1 AND ip_address = $2
          ),
          consecutive_failures AS (
@@ -80,7 +80,7 @@ class LoginAttempt {
   static async lockAccount(username, ip, lockDurationMinutes = 15) {
     try {
       const result = await query(
-        `UPDATE login_attempts 
+        `UPDATE tools.login_attempts 
          SET locked_until = CURRENT_TIMESTAMP + INTERVAL '${lockDurationMinutes} minutes'
          WHERE username = $1 AND ip_address = $2
          RETURNING *`,
@@ -98,7 +98,7 @@ class LoginAttempt {
   static async getRecentAttempts(username, limit = 10) {
     try {
       const result = await query(
-        `SELECT * FROM login_attempts 
+        `SELECT * FROM tools.login_attempts 
          WHERE username = $1 
          ORDER BY attempted_at DESC 
          LIMIT $2`,

@@ -1,30 +1,29 @@
-const { Client } = require('pg');
+import pkg from 'pg';
+const { Client } = pkg;
+import dotenv from 'dotenv';
 
-// Configurações do banco de dados
-const client = new Client({
-  host: 'localhost',
-  port: 5432,
-  database: 'patrimonio',
-  user: 'postgres',
-  password: '160298',
-});
+dotenv.config();
 
-async function checkUsers() {
+const checkUsers = async () => {
+  const client = new Client({
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    database: process.env.DB_NAME || 'patrimonio',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD,
+  });
+
   try {
-    // Conectar ao banco de dados
     await client.connect();
-    console.log('Conectado ao banco de dados com sucesso!');
-    
-    // Consultar usuários
-    const result = await client.query('SELECT * FROM users;');
+    console.log('Conectado ao PostgreSQL');
+
+    const result = await client.query('SELECT * FROM tools.users;');
     console.log('Usuários encontrados:', result.rows);
-    console.log('Total de usuários:', result.rows.length);
-    
-    // Fechar conexão
+  } catch (err) {
+    console.error('Erro ao conectar ou consultar:', err);
+  } finally {
     await client.end();
-  } catch (error) {
-    console.error('Erro ao conectar ao banco de dados:', error);
   }
-}
+};
 
 checkUsers();

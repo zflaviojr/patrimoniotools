@@ -18,10 +18,14 @@ export const createTables = async () => {
   try {
     console.log('Inicializando banco de dados...');
     
-    // Criar tabela de usuários
+    // Criar schema tools
+    console.log('Criando schema tools...');
+    await query('CREATE SCHEMA IF NOT EXISTS tools');
+    
+    // Criar tabela de usuários no schema tools
     console.log('Criando tabela de usuários...');
     await query(`
-      CREATE TABLE IF NOT EXISTS users (
+      CREATE TABLE IF NOT EXISTS tools.users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(255) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
@@ -34,7 +38,7 @@ export const createTables = async () => {
       )
     `);
     
-    // Criar tabela de responsáveis
+    // Criar tabela de responsáveis (mantém no schema public)
     console.log('Criando tabela de responsáveis...');
     await query(`
       CREATE TABLE IF NOT EXISTS tblresponsavel (
@@ -46,7 +50,7 @@ export const createTables = async () => {
       )
     `);
     
-    // Criar tabela de descrições
+    // Criar tabela de descrições (mantém no schema public)
     console.log('Criando tabela de descrições...');
     await query(`
       CREATE TABLE IF NOT EXISTS tbldescricao (
@@ -88,12 +92,12 @@ export const createTables = async () => {
       CREATE OR REPLACE FUNCTION fill_descricao_codigo()
       RETURNS TRIGGER AS $$
       BEGIN
-        IF NEW.codigo IS NULL OR NEW.codigo = '' THEN
-          NEW.codigo = generate_descricao_codigo();
+        IF NEW.codigo IS NULL THEN
+          NEW.codigo := generate_descricao_codigo();
         END IF;
         RETURN NEW;
       END;
-      $$ LANGUAGE plpgsql
+      $$ LANGUAGE plpgsql;
     `);
     
     // Remover trigger existente se houver e criar novo
@@ -107,7 +111,7 @@ export const createTables = async () => {
       CREATE TRIGGER trg_fill_descricao_codigo
         BEFORE INSERT ON tbldescricao
         FOR EACH ROW
-        EXECUTE FUNCTION fill_descricao_codigo()
+        EXECUTE PROCEDURE fill_descricao_codigo()
     `);
     
     // Criar tabelas de segurança
@@ -117,7 +121,7 @@ export const createTables = async () => {
     // Inserir usuário admin padrão (se não existir)
     console.log('Inserindo usuário admin padrão...');
     await query(`
-      INSERT INTO users (username, password, email, telefone) VALUES 
+      INSERT INTO tools.users (username, password, email, telefone) VALUES 
       ('admin', '$2b$10$Ep7SvSNUO05VS2g7BgFIzeBusJAzK2EZszTEbpzG.Qv15M7j5116u', 'admin@sistema.com', '(83) 2101-1000')
       ON CONFLICT (username) DO NOTHING
     `);
